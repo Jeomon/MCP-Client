@@ -1,6 +1,7 @@
 from src.types.capabilities import ClientCapabilities,ServerCapabilities
 from src.types.info import ClientInfo,ServerInfo
 from pydantic import BaseModel
+from typing import Optional
 
 class InitializeParams(BaseModel):
     protocolVersion: str
@@ -11,3 +12,4 @@ class InitializeResult(BaseModel):
     protocolVersion: str
     capabilities: ServerCapabilities
     serverInfo: ServerInfo
+    instructions: Optional[str]=None

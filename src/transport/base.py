@@ -1,4 +1,4 @@
-from src.types.message import JSONRPCMessage,JSONRPCNotification
+from src.types.json_rpc import JSONRPCMessage,JSONRPCNotification
 from abc import abstractmethod,ABC
 from typing import Any,Dict
 

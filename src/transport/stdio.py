@@ -1,4 +1,4 @@
-from src.types.message import JSONRPCMessage, JSONRPCNotification
+from src.types.json_rpc import JSONRPCMessage, JSONRPCNotification
 from src.types.stdio import StdioServerParams
 from src.transport.base import BaseTransport
 from asyncio.subprocess import Process

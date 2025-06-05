@@ -1,5 +1,5 @@
 from src.types.resources import Resource, ResourceTemplate, ResourceContent
-from src.types.message import JSONRPCMessage, Method
+from src.types.json_rpc import JSONRPCMessage, Method
 from src.transport.base import BaseTransport
 from typing import Optional
 from uuid import uuid4

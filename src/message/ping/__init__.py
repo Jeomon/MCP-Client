@@ -1,5 +1,5 @@
 from src.transport.base import BaseTransport
-from src.types.message import JSONRPCMessage,Method
+from src.types.json_rpc import JSONRPCMessage,Method
 from uuid import uuid4
 
 async def send_ping(transport:BaseTransport)->bool:

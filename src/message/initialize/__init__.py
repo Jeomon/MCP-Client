@@ -1,6 +1,6 @@
 from src.types.initialize import InitializeParams, InitializeResult
 from src.types.capabilities import ClientCapabilities
-from src.types.message import JSONRPCMessage, JSONRPCNotification, Method
+from src.types.json_rpc import JSONRPCMessage, JSONRPCNotification, Method
 from src.transport.base import BaseTransport
 from src.types.info import ClientInfo
 from uuid import uuid4
