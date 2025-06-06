@@ -11,7 +11,7 @@ import sys
 
 class StdioTransport(BaseTransport):
     """
-    Stdio transport for MCP
+    Stdio Transport for MCP
 
     Communicates with the MCP server via stdin and stdout of subprocess
     """
