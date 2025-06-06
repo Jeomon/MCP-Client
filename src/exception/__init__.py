@@ -1,6 +1,6 @@
 
 class MCPError(Exception):
-    '''JSON-RPC protocol error'''
+    '''MCP Protocol Error'''
     def __init__(self, code:int, message:str):
         self.code = code
         self.message = message

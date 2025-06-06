@@ -7,6 +7,7 @@ from src.exception import MCPError
 from typing import Any
 import asyncio
 import json
+import sys
 
 class StdioTransport(BaseTransport):
     """
@@ -24,7 +25,10 @@ class StdioTransport(BaseTransport):
         command=self.params.command
         args=self.params.args
         env=get_default_environment() if self.params.env is None else {**get_default_environment(),**self.params.env}
-        self.process=await asyncio.create_subprocess_exec(command,*args,env=env,stdin=asyncio.subprocess.PIPE,stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE)
+        if sys.platform=='win32' and command=='npx':
+            command='cmd'
+            args=['/c','npx',*args]           
+        self.process=await asyncio.create_subprocess_exec(command,*args,env=env,stdin=asyncio.subprocess.PIPE,stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE,start_new_session=True)
         self.listen_task=asyncio.create_task(self.listen())
 
     async def send_request(self, request:JSONRPCRequest)->JSONRPCResponse:

@@ -5,10 +5,8 @@
             "args": ["./mcp_servers/calculator_mcp.py"]
         },
         "exa-mcp": {
-            "command": "cmd",
+            "command": "npx",
             "args": [
-                "/c",
-                "npx",
                 "-y",
                 "exa-mcp-server",
                 "--tools=web_search_exa,research_paper_search,company_research,crawling,competitor_finder,linkedin_search,wikipedia_search_exa,github_search"
