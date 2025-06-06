@@ -10,6 +10,8 @@ async def main():
     await session.connect()
     initialize_result=await session.initialize()
     print(initialize_result)
+    tools_list=await session.tools_list()
+    print(tools_list)
     await session.disconnect()
 
 if __name__ == "__main__":
