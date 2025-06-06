@@ -1,4 +1,4 @@
-from src.types.json_rpc import JSONRPCMessage,JSONRPCNotification
+from src.types.json_rpc import JSONRPCRequest,JSONRPCResponse,JSONRPCError,JSONRPCNotification
 from abc import abstractmethod,ABC
 from typing import Any,Dict
 
@@ -21,12 +21,12 @@ class BaseTransport(ABC):
         pass
 
     @abstractmethod
-    async def send_message(self,message:JSONRPCMessage)->JSONRPCMessage:
+    async def send_request(self,request:JSONRPCRequest)->JSONRPCResponse:
         '''
-        Send JSON RPC message to the MCP server.
+        Send JSON RPC request to the MCP server.
 
         Args:
-            data: JSON RPC message object
+            request: JSONRPCRequest object
         
         Raises:
             TimeoutError: If the request times out

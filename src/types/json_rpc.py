@@ -2,13 +2,32 @@ from pydantic import BaseModel,Field,ConfigDict
 from typing import Optional,Any
 from enum import Enum
 
-class JSONRPCMessage(BaseModel):
+class JSONRPCRequest(BaseModel):
     jsonrpc: str=Field(default="2.0")
-    id: Optional[str]=None
-    method: Optional['Method']=None
+    id: Optional[str|int]=None
     params: Optional[dict[str,Any]]=None
+    method: Optional['Method']=None
+
+    model_config=ConfigDict(extra='allow')
+
+class JSONRPCResponse(BaseModel):
+    jsonrpc: str=Field(default="2.0")
+    id: Optional[str|int]=None
     result: Optional[dict[str,Any]]=None
-    error: Optional[dict[str,Any]]=None
+
+    model_config=ConfigDict(extra='allow')
+
+class JSONRPCError(BaseModel):
+    jsonrpc: str=Field(default="2.0")
+    id: Optional[str|int]=None
+    error: 'Error'
+
+    model_config=ConfigDict(extra='allow')
+
+class Error(BaseModel):
+    code: int
+    message: str
+    data: Optional[Any]=None
 
     model_config=ConfigDict(extra='allow')
 
@@ -40,5 +59,7 @@ class Method(str,Enum):
 
     # Notification methods
     NOTIFICATION_PROMPTS_LIST_CHANGED = "notifications/prompts/list_changed"
+    NOTIFICATION_TOOLS_LIST_CHANGED = "notifications/tools/list_changed"
+    NOTIFICATION_RESOURCES_LIST_CHANGED = "notifications/resources/list_changed"
     NOTIFICATION_INITIALIZED = "notifications/initialized"
     

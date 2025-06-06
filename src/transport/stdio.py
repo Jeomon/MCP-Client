@@ -1,4 +1,4 @@
-from src.types.json_rpc import JSONRPCMessage, JSONRPCNotification
+from src.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCNotification
 from src.types.stdio import StdioServerParams
 from src.transport.base import BaseTransport
 from asyncio.subprocess import Process
@@ -16,7 +16,7 @@ class StdioTransport(BaseTransport):
         self.params=params
         self.process:Process = None
         self.listen_task:asyncio.Task = None
-        self.queue:dict[str,asyncio.Queue[JSONRPCMessage]]={}
+        self.queue:dict[str,asyncio.Queue[JSONRPCResponse]]={}
 
     async def connect(self)->None:
         command=self.params.command
@@ -24,11 +24,11 @@ class StdioTransport(BaseTransport):
         self.process=await asyncio.create_subprocess_exec(command,*args,stdin=asyncio.subprocess.PIPE,stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE)
         self.listen_task=asyncio.create_task(self.listen())
 
-    async def send_message(self, message:JSONRPCMessage)->JSONRPCMessage:
-        id=message.id
+    async def send_request(self, request:JSONRPCRequest)->JSONRPCResponse:
+        id=request.id
         self.queue[id]=asyncio.Queue()
         try:
-            self.process.stdin.write((json.dumps(message.model_dump()) + '\n').encode())
+            self.process.stdin.write((json.dumps(request.model_dump()) + '\n').encode())
             await self.process.stdin.drain()
 
             queue=self.queue.get(id)
@@ -61,7 +61,7 @@ class StdioTransport(BaseTransport):
                 if not line:
                     break # If the process is closed/cancelled
                 try:
-                    message = JSONRPCMessage.model_validate(json.loads(line.decode().strip()))
+                    message = JSONRPCResponse.model_validate(json.loads(line.decode().strip()))
                 except json.JSONDecodeError:
                     print(f"Invalid JSON received: {line}")
                 
@@ -75,21 +75,30 @@ class StdioTransport(BaseTransport):
                 print(f"Error: {e}")
 
     async def disconnect(self):
-        '''
+        """
         Stop the MCP server process.
-        '''
-        if self.process:
-            self.process.terminate()
-            await self.process.wait()
-            self.process=None
-
+        """
         if self.listen_task:
             self.listen_task.cancel()
             try:
-                self.listen_task
+                await self.listen_task
             except asyncio.CancelledError:
                 pass
-
-    
-            
-                    
+            finally:
+                self.listen_task=None
+        if self.process and self.process.stdin:
+            try:
+                self.process.stdin.write_eof()
+            except Exception:
+                pass
+            self.process.stdin.close()
+            if hasattr(self.process.stdin, "wait_closed"):
+                await self.process.stdin.wait_closed()
+            self.process.terminate()
+            try:
+                await asyncio.wait_for(self.process.wait(), timeout=5)
+            except asyncio.TimeoutError:
+                print("Process did not terminate in time; killing it.")
+                self.process.kill()
+                await self.process.wait()
+            self.process = None
