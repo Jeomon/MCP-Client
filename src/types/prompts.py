@@ -13,7 +13,7 @@ class Argument(BaseModel):
 
     model_config=ConfigDict(extra='allow')
 
-class PromptContent(BaseModel):
+class PromptResult(BaseModel):
     description: str
     messages: list['Message']
 

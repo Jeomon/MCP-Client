@@ -18,7 +18,7 @@ class ResourceTemplate(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-class ResourceContent(BaseModel):
+class ResourceResult(BaseModel):
     uri: str
     mimeType: Optional[str]=None
     text: Optional[str]=None

@@ -1,18 +1,13 @@
-from src.transport.stdio import StdioTransport
-from src.types.stdio import StdioServerParams
-from src.session import Session
+from src.client import Client
 import asyncio
 
 async def main():
-    params=StdioServerParams(command="python",args=["./mcp_servers/calculator_mcp.py"])
-    stdio_transport=StdioTransport(params=params)
-    session=Session(transport=stdio_transport)
-    await session.connect()
-    initialize_result=await session.initialize()
-    print(initialize_result)
+    client=Client.from_config_file("./mcp_servers/config.json")
+    session=await client.create_session('calculator')
     tools_list=await session.tools_list()
     print(tools_list)
-    await session.disconnect()
+    await client.close_session("calculator")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

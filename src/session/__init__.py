@@ -3,8 +3,8 @@ from src.types.initialize import InitializeResult,InitializeParams
 from src.types.capabilities import ClientCapabilities
 from src.transport.base import BaseTransport
 from src.types.tools import Tool, ToolRequest, ToolResult
-from src.types.prompts import Prompt, PromptContent
-from src.types.resources import Resource, ResourceContent, ResourceTemplate
+from src.types.prompts import Prompt, PromptResult
+from src.types.resources import Resource, ResourceResult, ResourceTemplate
 from src.types.info import ClientInfo
 from typing import Optional,Any
 
@@ -40,20 +40,20 @@ class Session:
         response=await self.transport.send_request(request=request)
         return [Prompt.model_validate(prompt) for prompt in response.result.get("prompts")]
     
-    async def prompts_get(self,name:str)->PromptContent:
-        request=JSONRPCRequest(id=self.id,method=Method.PROMPTS_GET,params={"name":name})
+    async def prompts_get(self,name:str,arguments:Optional[dict[str,Any]]=None)->PromptResult:
+        request=JSONRPCRequest(id=self.id,method=Method.PROMPTS_GET,params={"name":name,"arguments":arguments})
         response=await self.transport.send_request(request=request)
-        return PromptContent.model_validate(response.result)
+        return PromptResult.model_validate(response.result)
     
     async def resources_list(self,cursor:Optional[str]=None)->list[Resource]:
         request=JSONRPCRequest(id=self.id,method=Method.RESOURCES_LIST,params={"cursor":cursor} if cursor else {})
         response=await self.transport.send_request(request=request)
         return [Resource.model_validate(resource) for resource in response.result.get("resources")]
     
-    async def resources_read(self,uri:str)->ResourceContent:
+    async def resources_read(self,uri:str)->ResourceResult:
         request=JSONRPCRequest(id=self.id,method=Method.RESOURCES_READ,params={"uri":uri})
         response=await self.transport.send_request(request=request)
-        return [ResourceContent.model_validate(resource) for resource in response.result.get("contents")]
+        return [ResourceResult.model_validate(resource) for resource in response.result.get("contents")]
     
     async def resources_templates_list(self)->list[ResourceTemplate]:
         request=JSONRPCRequest(id=self.id,method=Method.RESOURCES_TEMPLATES_LIST)
