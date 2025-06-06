@@ -73,7 +73,7 @@ class Client:
             await self.create_session(name=name)
 
     async def close_all_sessions(self)->None:
-        for name in self.sessions:
+        for name in list(self.sessions.keys()):
             await self.close_session(name=name)
     
 
