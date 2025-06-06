@@ -81,3 +81,4 @@ class SSETransport(BaseTransport):
         '''
         if self.client:
             await self.client.aclose()
+            self.client=None

@@ -1,5 +1,5 @@
 from src.transport.stdio import StdioTransport,StdioServerParams
-# from src.transport.sse import SSETransport
+from src.transport.sse import SSETransport
 from src.transport.base import BaseTransport
 from typing import Any
 
@@ -13,8 +13,8 @@ def create_transport_from_server_config(server_config:dict[str,Any])->BaseTransp
     Returns:
         The transport instance for the server
     '''
-    # if is_sse_transport(server_config):
-    #     return SSETransport(**server_config)
+    if is_sse_transport(server_config):
+        return SSETransport(**server_config)
     if is_stdio_transport(server_config):
         params=StdioServerParams(**server_config)
         return StdioTransport(params=params)
