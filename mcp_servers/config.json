@@ -3,6 +3,28 @@
         "calculator-mcp": {
             "command": "python",
             "args": ["./mcp_servers/calculator_mcp.py"]
+        },
+        "exa-mcp": {
+            "command": "cmd",
+            "args": [
+                "/c",
+                "npx",
+                "-y",
+                "exa-mcp-server",
+                "--tools=web_search_exa,research_paper_search,company_research,crawling,competitor_finder,linkedin_search,wikipedia_search_exa,github_search"
+            ],
+            "env": {
+                "EXA_API_KEY": "EXA_API_KEY HERE"
+            }
+        },
+        "windows-mcp": {
+            "command": "uv",
+            "args": [
+                "--directory",
+                "D:\\Personal Projects\\Windows-MCP",
+                "run",
+                "main.py"
+            ]
         }
     }
 }
