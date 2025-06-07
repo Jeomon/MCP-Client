@@ -80,20 +80,22 @@ class SSETransport(BaseTransport):
         async with aconnect_sse(self.client, 'GET', url) as iter:
             async for obj in iter.aiter_sse():
                 try:
-                    if obj.event=='endpoint':
-                        self.session_url=urljoin(self.url,obj.data)
-                        self.queue[self.session_url]=asyncio.Queue()
-                        self.ready_event.set()
-                        continue
-                    if obj.event=='message':
-                        queue=self.queue.get(self.session_url)
-                        content:dict=json.loads(obj.data)
-                        if 'result' in content:
-                            message = JSONRPCResponse.model_validate(content)
-                        elif 'error' in content:
-                            error=Error.model_validate(content.get('error'))
-                            message=JSONRPCError(id=content.get('id'),error=error,message=error.message)
-                        await queue.put(message)
+                    match obj.event:
+                        case 'endpoint':
+                            self.session_url=urljoin(self.url,obj.data)
+                            self.queue[self.session_url]=asyncio.Queue()
+                            self.ready_event.set()
+                        case 'message':
+                            queue=self.queue.get(self.session_url)
+                            content:dict=json.loads(obj.data)
+                            if 'result' in content:
+                                message = JSONRPCResponse.model_validate(content)
+                            elif 'error' in content:
+                                error=Error.model_validate(content.get('error'))
+                                message=JSONRPCError(id=content.get('id'),error=error,message=error.message)
+                            await queue.put(message)
+                        case _:
+                            pass
                 except Exception as e:
                     print(f"Error: {e}")
                         
