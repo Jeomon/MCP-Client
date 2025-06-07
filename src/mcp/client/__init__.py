@@ -1,5 +1,5 @@
-from src.client.utils import create_transport_from_server_config
-from src.session import Session
+from src.mcp.client.utils import create_transport_from_server_config
+from src.mcp.session import Session
 from typing import Any
 import json
 

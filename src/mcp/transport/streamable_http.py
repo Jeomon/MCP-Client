@@ -1,5 +1,5 @@
-from src.types.json_rpc import JSONRPCRequest, JSONRPCNotification, JSONRPCResponse, JSONRPCError, Error
-from src.transport.base import BaseTransport
+from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCNotification, JSONRPCResponse, JSONRPCError, Error
+from src.mcp.transport.base import BaseTransport
 from httpx import AsyncClient, Limits
 from typing import Optional
 import json

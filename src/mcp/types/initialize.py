@@ -1,5 +1,5 @@
-from src.types.capabilities import ClientCapabilities,ServerCapabilities
-from src.types.info import ClientInfo,ServerInfo
+from src.mcp.types.capabilities import ClientCapabilities,ServerCapabilities
+from src.mcp.types.info import ClientInfo,ServerInfo
 from pydantic import BaseModel
 from typing import Optional
 

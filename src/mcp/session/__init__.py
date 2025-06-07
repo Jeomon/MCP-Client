@@ -1,11 +1,11 @@
-from src.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCNotification, Method
-from src.types.initialize import InitializeResult,InitializeParams
-from src.types.capabilities import ClientCapabilities
-from src.transport.base import BaseTransport
-from src.types.tools import Tool, ToolRequest, ToolResult
-from src.types.prompts import Prompt, PromptResult
-from src.types.resources import Resource, ResourceResult, ResourceTemplate
-from src.types.info import ClientInfo
+from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCNotification, Method
+from src.mcp.types.initialize import InitializeResult,InitializeParams
+from src.mcp.types.capabilities import ClientCapabilities
+from src.mcp.transport.base import BaseTransport
+from src.mcp.types.tools import Tool, ToolRequest, ToolResult
+from src.mcp.types.prompts import Prompt, PromptResult
+from src.mcp.types.resources import Resource, ResourceResult, ResourceTemplate
+from src.mcp.types.info import ClientInfo
 from typing import Optional,Any
 
 from uuid import uuid4

@@ -1,8 +1,8 @@
-from src.types.json_rpc import JSONRPCRequest, JSONRPCError, Error, JSONRPCResponse
-from src.transport.base import BaseTransport
+from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCError, Error, JSONRPCResponse
+from src.mcp.transport.base import BaseTransport
 from httpx import AsyncClient, Limits
 from httpx_sse import aconnect_sse
-from src.exception import MCPError
+from src.mcp.exception import MCPError
 from urllib.parse import urljoin
 from typing import Optional
 import asyncio

@@ -1,5 +1,5 @@
-from src.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCError, Error
-from src.exception import MCPError
+from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCError, Error
+from src.mcp.exception import MCPError
 from typing import Optional, Dict
 import websockets
 import asyncio
