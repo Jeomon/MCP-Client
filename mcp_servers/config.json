@@ -23,6 +23,9 @@
                 "run",
                 "main.py"
             ]
+        },
+        "time-mcp":{
+            "url":"http://localhost:8081"
         }
     }
 }

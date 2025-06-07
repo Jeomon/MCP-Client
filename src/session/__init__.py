@@ -20,9 +20,9 @@ class Session:
 
     async def initialize(self)->InitializeResult:
         client_version="2024-11-05"
-        initialize_params=InitializeParams(clientInfo=ClientInfo(),capabilities=ClientCapabilities(),protocolVersion=client_version)
+        params=InitializeParams(clientInfo=ClientInfo(),capabilities=ClientCapabilities(),protocolVersion=client_version)
 
-        request=JSONRPCRequest(id=self.id,method=Method.INITIALIZE,params=initialize_params.model_dump())
+        request=JSONRPCRequest(id=self.id,method=Method.INITIALIZE,params=params.model_dump())
         response=await self.transport.send_request(request=request)
 
         json_rpc_notification=JSONRPCNotification(method=Method.NOTIFICATION_INITIALIZED)
