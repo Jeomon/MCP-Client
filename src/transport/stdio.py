@@ -22,6 +22,9 @@ class StdioTransport(BaseTransport):
         self.queue:dict[str,asyncio.Queue[JSONRPCResponse|JSONRPCError]]={}
 
     async def connect(self)->None:
+        '''
+        Create a Stdio Client
+        '''
         command=self.params.command
         args=self.params.args
         env=get_default_environment() if self.params.env is None else {**get_default_environment(),**self.params.env}
@@ -109,7 +112,7 @@ class StdioTransport(BaseTransport):
 
     async def disconnect(self):
         """
-        Stop the MCP server process.
+        Disconnect from the MCP server process.
         """
         if self.listen_task:
             self.listen_task.cancel()

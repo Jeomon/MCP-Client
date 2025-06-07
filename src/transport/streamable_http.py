@@ -12,9 +12,24 @@ class StreamableHTTPTransport(BaseTransport):
         self.client: AsyncClient = None
 
     async def connect(self):
+        '''
+        Create a Http Client
+        '''
         self.client = AsyncClient(timeout=30, headers=self.headers, limits=Limits(max_connections=10))
 
     async def send_request(self, request: JSONRPCRequest) -> JSONRPCResponse | JSONRPCError:
+        '''
+        Send a JSON RPC request to the MCP server
+
+        Args:
+            request: JSON RPC request object
+
+        Returns:
+            JSON RPC response object
+
+        Raises:
+            MCPError: If the request fails
+        '''
         headers = {**self.headers,'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream'}
         if headers.get('mcp-session-id') is None and self.mcp_session_id is not None:        
             headers['mcp-session-id'] = self.mcp_session_id
@@ -35,6 +50,12 @@ class StreamableHTTPTransport(BaseTransport):
         return message
 
     async def send_notification(self, notification: JSONRPCNotification):
+        '''
+        Send a JSON RPC notification to the MCP server
+
+        Args:
+            notification: JSON RPC notification object
+        '''
         headers = {**self.headers,'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream'}
         if headers.get('mcp-session-id') is None:              
             headers['mcp-session-id'] = self.mcp_session_id
@@ -42,6 +63,9 @@ class StreamableHTTPTransport(BaseTransport):
         await self.client.post(self.url, headers=headers, json=json_payload)          
 
     async def disconnect(self):
+        '''
+        Disconnect from the MCP server
+        '''
         headers = {**self.headers,'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream'}
         if headers.get('mcp-session-id') is None:        
             headers['mcp-session-id'] = self.mcp_session_id

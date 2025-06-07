@@ -26,7 +26,7 @@ class SSETransport(BaseTransport):
 
     async def connect(self):
         '''
-        Create a Http Client
+        Create a SSE Client
         '''
         self.client=AsyncClient(timeout=30,headers=self.headers,limits=Limits(max_connections=10))
         self.listen_task=asyncio.create_task(self.listen())
@@ -74,7 +74,7 @@ class SSETransport(BaseTransport):
         
     async def listen(self):
         '''
-        Listen for SSE messages from the MCP
+        Listen for JSON RPC messages from the MCP
         '''
         async with aconnect_sse(self.client, 'GET', self.url) as iter:
             async for obj in iter.aiter_sse():
@@ -100,7 +100,7 @@ class SSETransport(BaseTransport):
                         
     async def disconnect(self):
         '''
-        Close the Http Client
+        Disconnect from the MCP server
         '''
         if self.listen_task:
             self.listen_task.cancel()

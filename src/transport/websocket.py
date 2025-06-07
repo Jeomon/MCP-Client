@@ -14,10 +14,16 @@ class WebSocketTransport:
         self.queue: Dict[str, asyncio.Queue[JSONRPCResponse | JSONRPCError]] = {}
 
     async def connect(self):
+        '''
+        Create a WebSocket Client
+        '''
         self.websocket = await websockets.connect(self.url, additional_headers=self.headers, subprotocols=["mcp"])
         self.listen_task = asyncio.create_task(self.listen())
 
     async def listen(self):
+        '''
+        Listen for JSON RPC messages from the MCP
+        '''
         try:
             async for data in self.websocket:
                 try:
@@ -37,6 +43,18 @@ class WebSocketTransport:
             print("WebSocket closed.")
 
     async def send_request(self, request: JSONRPCRequest) -> JSONRPCResponse | JSONRPCError:
+        '''
+        Send a JSON RPC request to the MCP server
+
+        Args:
+            request: JSON RPC request object
+
+        Returns:
+            JSON RPC response object
+
+        Raises:
+            MCPError: If the request fails
+        '''
         id=request.id
         self.queue[id] = asyncio.Queue()
         await self.websocket.send(json.dumps(request.model_dump()))
@@ -48,9 +66,18 @@ class WebSocketTransport:
         return response
 
     async def send_notification(self, notification: JSONRPCRequest):
+        '''
+        Send a JSON RPC notification to the MCP server
+
+        Args:
+            notification: JSON RPC notification object
+        '''
         await self.websocket.send(json.dumps(notification.model_dump()))
 
     async def disconnect(self):
+        '''
+        Disconnect from the MCP server
+        '''
         if self.listen_task:
             self.listen_task.cancel()
             try:
