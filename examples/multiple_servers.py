@@ -7,15 +7,15 @@ from src.client import Client
 async def main():
     client=Client.from_config_file("./mcp_servers/config.json")
     session1=await client.create_session('time-mcp') #SSE Server
-    session2=await client.create_session('exa-mcp') #Stdio Server
-    tools_list1=await session1.tools_list()
-    print(tools_list1)
-    tool_result=await session1.tools_call('Time-Tool',{})
-    print(tool_result)
+    session2=await client.create_session('greet-mcp') #Streamable Http Server
+    session3=await client.create_session('exa-mcp') #Stdio Server
     tools_list2=await session2.tools_list()
     print(tools_list2)
-    await client.close_session('time-mcp')
-    await client.close_session('exa-mcp')
+    tools_list1=await session1.tools_list()
+    print(tools_list1)
+    tools_list3=await session3.tools_list()
+    print(tools_list3)
+    await client.close_all_sessions()
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -24,9 +24,7 @@ if __name__ == "__main__":
 '''
 RESULTS:
 
+[Tool(name='Greet-Tool', description='', inputSchema=ToolInputSchema(type='object', properties={'name': {'title': 'Name', 'type': 'string'}}, required=['name']), annotations=None)]
 [Tool(name='Time-Tool', description='Returns the current time', inputSchema=ToolInputSchema(type='object', properties={}, required=None), annotations=None)]
-
-content=[{'type': 'text', 'text': 'The current time is: 09:07:25'}] isError=False
-
 [Tool(name='web_search_exa', description='Search the web using Exa AI - performs real-time web searches and can scrape content from specific URLs. Supports configurable result counts and returns the content from the most relevant websites.', inputSchema=ToolInputSchema(type='object', properties={'query': {'type': 'string', 'description': 'Search query'}, 'numResults': {'type': 'number', 'description': 'Number of search results to return (default: 5)'}}, required=['query']), annotations=None), Tool(name='research_paper_search', description='Search across 100M+ research papers with full text access using Exa AI - performs targeted academic paper searches with deep research content coverage. Returns detailed information about relevant academic papers including titles, authors, publication dates, and full text excerpts. Control the number of results and character counts returned to balance comprehensiveness with conciseness based on your task requirements.', inputSchema=ToolInputSchema(type='object', properties={'query': {'type': 'string', 'description': 'Research topic or keyword to search for'}, 'numResults': {'type': 'number', 'description': 'Number of research papers to return (default: 5)'}, 'maxCharacters': {'type': 'number', 'description': "Maximum number of characters to return for each result's text content (Default: 3000)"}}, required=['query']), annotations=None), Tool(name='company_research', description='Research companies using Exa AI - performs targeted searches of company websites to gather comprehensive information about businesses. Returns detailed information from company websites including about pages, pricing, FAQs, blogs, and other relevant content. Specify the company URL and optionally target specific sections of their website.', inputSchema=ToolInputSchema(type='object', properties={'query': {'type': 'string', 'description': "Company website URL (e.g., 'exa.ai' or 'https://exa.ai')"}, 'subpages': {'type': 'number', 'description': 'Number of subpages to crawl (default: 10)'}, 'subpageTarget': {'type': 'array', 'items': {'type': 'string'}, 'description': "Specific sections to target (e.g., ['about', 'pricing', 'faq', 'blog']). If not provided, will crawl the most relevant pages."}}, required=['query']), annotations=None), Tool(name='crawling', description='Extract content from specific URLs using Exa AI - performs targeted crawling of web pages to retrieve their full content. Useful for reading articles, PDFs, or any web page when you have the exact URL. Returns the complete text content of the specified URL.', inputSchema=ToolInputSchema(type='object', properties={'url': {'type': 'string', 'description': "The URL to crawl (e.g., 'exa.ai')"}}, required=['url']), annotations=None), Tool(name='competitor_finder', description="Find competitors of a company using Exa AI - performs targeted searches to identify businesses that offer similar products or services. Describe what the company does (without mentioning its name) and optionally provide the company's website to exclude it from results.", inputSchema=ToolInputSchema(type='object', properties={'query': {'type': 'string', 'description': "Describe what the company/product in a few words (e.g., 'web search API', 'AI image generation', 'cloud storage service'). Keep it simple. Do not include the company name."}, 'excludeDomain': {'type': 'string', 'description': "Optional: The company's website to exclude from results (e.g., 'exa.ai')"}, 'numResults': {'type': 'number', 'description': 'Number of competitors to return (default: 10)'}}, required=['query']), annotations=None), Tool(name='linkedin_search', description="Search LinkedIn for companies using Exa AI. Simply include company URL, or company name, with 'company page' appended in your query.", inputSchema=ToolInputSchema(type='object', properties={'query': {'type': 'string', 'description': 'Search query for LinkedIn (e.g., <url> company page OR <company name> company page)'}, 'numResults': {'type': 'number', 'description': 'Number of search results to return (default: 5)'}}, required=['query']), annotations=None), Tool(name='wikipedia_search_exa', description='Search Wikipedia using Exa AI - performs searches specifically within Wikipedia.org and returns relevant content from Wikipedia pages.', inputSchema=ToolInputSchema(type='object', properties={'query': {'type': 'string', 'description': 'Search query for Wikipedia'}, 'numResults': {'type': 'number', 'description': 'Number of search results to return (default: 5)'}}, required=['query']), annotations=None), Tool(name='github_search', description='Search GitHub repositories using Exa AI - performs real-time searches on GitHub.com to find relevant repositories and GitHub accounts.', inputSchema=ToolInputSchema(type='object', properties={'query': {'type': 'string', 'description': 'Search query for GitHub repositories, or Github account, or code'}, 'numResults': {'type': 'number', 'description': 'Number of search results to return (default: 5)'}}, required=['query']), annotations=None)]
 '''

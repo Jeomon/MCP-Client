@@ -16,7 +16,10 @@
             }
         },
         "time-mcp":{
-            "url":"http://localhost:8081"
+            "url":"http://localhost:8081/sse"
+        },
+        "greet-mcp":{
+            "url":"http://localhost:8000/mcp/"
         }
     }
 }

@@ -76,8 +76,7 @@ class SSETransport(BaseTransport):
         '''
         Listen for SSE messages from the MCP
         '''
-        url=urljoin(self.url,'sse')
-        async with aconnect_sse(self.client, 'GET', url) as iter:
+        async with aconnect_sse(self.client, 'GET', self.url) as iter:
             async for obj in iter.aiter_sse():
                 try:
                     match obj.event:
