@@ -15,15 +15,6 @@
                 "EXA_API_KEY": "EXA_API_KEY HERE"
             }
         },
-        "windows-mcp": {
-            "command": "uv",
-            "args": [
-                "--directory",
-                "D:\\Personal Projects\\Windows-MCP",
-                "run",
-                "main.py"
-            ]
-        },
         "time-mcp":{
             "url":"http://localhost:8081"
         }

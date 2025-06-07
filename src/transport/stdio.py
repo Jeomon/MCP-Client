@@ -31,7 +31,7 @@ class StdioTransport(BaseTransport):
         self.process=await asyncio.create_subprocess_exec(command,*args,env=env,stdin=asyncio.subprocess.PIPE,stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE,start_new_session=True)
         self.listen_task=asyncio.create_task(self.listen())
 
-    async def send_request(self, request:JSONRPCRequest)->JSONRPCResponse:
+    async def send_request(self, request:JSONRPCRequest)->JSONRPCResponse|JSONRPCError:
         '''
         Send a JSON RPC request to the MCP server
 

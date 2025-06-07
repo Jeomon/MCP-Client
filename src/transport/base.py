@@ -21,7 +21,7 @@ class BaseTransport(ABC):
         pass
 
     @abstractmethod
-    async def send_request(self,request:JSONRPCRequest)->JSONRPCResponse:
+    async def send_request(self,request:JSONRPCRequest)->JSONRPCResponse|JSONRPCError:
         '''
         Send JSON RPC request to the MCP server.
 
