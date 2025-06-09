@@ -47,6 +47,7 @@ class Method(str,Enum):
     RESOURCES_LIST = "resources/list"
     RESOURCES_READ = "resources/read"
     RESOURCES_SUBSCRIBE = "resources/subscribe"
+    RESOURCES_UNSUBSCRIBE = "resources/unsubscribe"
     RESOURCES_TEMPLATES_LIST = "resources/templates/list"
 
     # Tool methods
@@ -58,8 +59,5 @@ class Method(str,Enum):
     PROMPTS_GET = "prompts/get"
 
     # Notification methods
-    NOTIFICATION_PROMPTS_LIST_CHANGED = "notifications/prompts/list_changed"
-    NOTIFICATION_TOOLS_LIST_CHANGED = "notifications/tools/list_changed"
-    NOTIFICATION_RESOURCES_LIST_CHANGED = "notifications/resources/list_changed"
     NOTIFICATION_INITIALIZED = "notifications/initialized"
     
