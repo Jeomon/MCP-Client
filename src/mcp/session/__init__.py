@@ -11,17 +11,18 @@ from typing import Optional,Any
 from uuid import uuid4
 
 class Session:
-    def __init__(self,transport:BaseTransport)->None:
+    def __init__(self,transport:BaseTransport,client_info:ClientInfo)->None:
         self.id=str(uuid4())
         self.transport=transport
+        self.client_info=client_info
 
     async def connect(self)->None:
         await self.transport.connect()
 
     async def initialize(self)->InitializeResult:
-        client_version="2024-11-05"
+        PROTOCOL_VERSION="2024-11-05"
         roots=RootCapability(listChanged=True)
-        params=InitializeParams(clientInfo=ClientInfo(),capabilities=ClientCapabilities(roots=roots),protocolVersion=client_version)
+        params=InitializeParams(clientInfo=self.client_info,capabilities=ClientCapabilities(roots=roots),protocolVersion=PROTOCOL_VERSION)
         request=JSONRPCRequest(id=self.id,method=Method.INITIALIZE,params=params.model_dump(exclude_none=True))
         response=await self.transport.send_request(request=request)
 
