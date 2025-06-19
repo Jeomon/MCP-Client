@@ -86,21 +86,23 @@ class StdioTransport(BaseTransport):
         '''
         Listens for JSON RPC messages from Stdio Server
         '''
+        buffer=bytearray()
         while True:
             try:
-                line=await self.process.stdout.readline()
-                if not line:
+                chunk=await self.process.stdout.read(1024)
+                if not chunk:
                     break # If the process is closed/cancelled
+                buffer.extend(chunk)
                 try:
-                    content:dict=json.loads(line.decode().strip())
+                    content:dict=json.loads(buffer.decode().strip())
                     if 'result' in content:
                         message = JSONRPCResponse.model_validate(content)
                     elif 'error' in content:
                         error=Error.model_validate(content.get('error'))
                         message=JSONRPCError(id=content.get('id'),error=error,message=error.message)
+                    buffer.clear()  # Reset buffer after successful parse
                 except json.JSONDecodeError:
-                    print(f"Invalid JSON received: {line}")
-                
+                    continue # Continue reading until a complete JSON object is received
                 id=message.id
                 if id and id in self.queue.keys():
                     queue=self.queue.get(id)
