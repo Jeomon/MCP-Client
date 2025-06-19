@@ -23,6 +23,9 @@ class ResourceCapability(BaseModel):
 class SamplingCapability(BaseModel):
     model_config=ConfigDict(extra='allow')
 
+class ElicitationCapability(BaseModel):
+    model_config=ConfigDict(extra='allow')
+
 class RootCapability(BaseModel):
     listChanged:bool
     model_config=ConfigDict(extra='allow')
@@ -30,4 +33,5 @@ class RootCapability(BaseModel):
 class ClientCapabilities(BaseModel):
     roots: Optional['RootCapability'] = None
     sampling: Optional['SamplingCapability'] = None
+    elicitation: Optional['ElicitationCapability'] = None
     model_config=ConfigDict(extra='allow')

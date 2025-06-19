@@ -20,6 +20,15 @@
         },
         "greet-mcp":{
             "url":"http://localhost:8000/mcp/"
+        },
+        "windows-mcp": {
+                "command": "uv",
+                "args": [
+                "--directory",
+                "D:\\Personal Projects\\Windows-MCP",
+                "run",
+                "main.py"
+                ]
         }
     }
 }

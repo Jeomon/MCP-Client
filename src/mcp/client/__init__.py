@@ -51,7 +51,7 @@ class Client:
         transport=create_transport_from_server_config(server_config=server_config)
         session=Session(transport=transport,client_info=self.client_info)
         await session.connect()
-        await session.initialize()
+        initialize_result=await session.initialize()
         self.sessions[name]=session
         return session
     

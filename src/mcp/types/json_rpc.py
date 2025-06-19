@@ -60,4 +60,5 @@ class Method(str,Enum):
 
     # Notification methods
     NOTIFICATION_INITIALIZED = "notifications/initialized"
+    NOTIFICATION_ROOTS_LIST_CHANGED = "notifications/roots/list_changed"
     

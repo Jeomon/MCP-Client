@@ -25,10 +25,8 @@ class Session:
         params=InitializeParams(clientInfo=self.client_info,capabilities=ClientCapabilities(roots=roots),protocolVersion=PROTOCOL_VERSION)
         request=JSONRPCRequest(id=self.id,method=Method.INITIALIZE,params=params.model_dump(exclude_none=True))
         response=await self.transport.send_request(request=request)
-
         json_rpc_notification=JSONRPCNotification(method=Method.NOTIFICATION_INITIALIZED)
         await self.transport.send_notification(json_rpc_notification)
-
         return InitializeResult.model_validate(response.result)
     
     async def ping(self)->bool:
@@ -79,6 +77,10 @@ class Session:
         message=JSONRPCRequest(id=self.id,method=Method.TOOLS_CALL,params=tool_request.model_dump())
         response=await self.transport.send_request(request=message)
         return ToolResult.model_validate(response.result)
+    
+    async def roots_list_changed(self)->None:
+        json_rpc_notification=JSONRPCNotification(method=Method.NOTIFICATION_ROOTS_LIST_CHANGED)
+        await self.transport.send_notification(json_rpc_notification)
 
     async def disconnect(self)->None:
         await self.transport.disconnect()
