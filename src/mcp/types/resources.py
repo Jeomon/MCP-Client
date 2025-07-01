@@ -18,9 +18,19 @@ class ResourceTemplate(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-class ResourceResult(BaseModel):
+class TextContent(BaseModel):
     uri: str
+    name: str
+    title: Optional[str]=None
     mimeType: Optional[str]=None
-    text: Optional[str]=None
-    blob: Optional[str]=None # base64 encoded binary data
+    text: str
 
+class BinaryContent(BaseModel):
+    uri: str
+    name: str
+    title: Optional[str]=None
+    mimeType: Optional[str]=None
+    blob: str
+
+class ResourceResult(BaseModel):
+    contents: list[TextContent | BinaryContent]

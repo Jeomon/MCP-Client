@@ -1,7 +1,13 @@
-from pydantic import BaseModel,Field
+from src.mcp.types.resources import TextContent as ResourceTextContent, BinaryContent as ResourceBinaryContent
 from typing import Optional,Any
+from pydantic import BaseModel
 
 class ToolInputSchema(BaseModel):
+    type: str
+    properties: dict[str,Any]
+    required: Optional[list[str]]=None
+
+class ToolOutputSchema(BaseModel):
     type: str
     properties: dict[str,Any]
     required: Optional[list[str]]=None
@@ -10,15 +16,35 @@ class Tool(BaseModel):
     name: str
     description: str
     inputSchema: ToolInputSchema
-    annotations: Optional['Annotations']=None 
+    outputSchema: ToolOutputSchema
+    annotations: Optional['Annotations']=None
 
 class ToolRequest(BaseModel):
     name: str
     arguments: dict[str,Any]
 
+class TextContent(BaseModel):
+    type: str = 'text'
+    text: str
+
+class ImageContent(BaseModel):
+    type: str = 'image'
+    data: str
+    mimeType: str
+
+class AudioContent(BaseModel):
+    type: str = 'audio'
+    data: str
+    mimeType: str
+
+class EmbeddedResource(BaseModel):
+    type: str = 'resource'
+    resource: ResourceTextContent | ResourceBinaryContent
+
 class ToolResult(BaseModel):
-    content: list[dict[str,Any]]
+    content: list[TextContent | ImageContent | AudioContent | EmbeddedResource]
     isError: bool=False
+    structuredContent: Optional[dict[str,Any]]=None
 
 class Annotations(BaseModel):
     title: Optional[str]=None

@@ -1,5 +1,5 @@
-from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCNotification, Method
 from src.mcp.types.resources import Resource, ResourceResult, ResourceTemplate
+from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCNotification, Method
 from src.mcp.types.capabilities import ClientCapabilities, RootCapability
 from src.mcp.types.initialize import InitializeResult,InitializeParams
 from src.mcp.types.tools import Tool, ToolRequest, ToolResult
@@ -79,8 +79,8 @@ class Session:
         return ToolResult.model_validate(response.result)
     
     async def roots_list_changed(self)->None:
-        json_rpc_notification=JSONRPCNotification(method=Method.NOTIFICATION_ROOTS_LIST_CHANGED)
-        await self.transport.send_notification(json_rpc_notification)
+        notification=JSONRPCNotification(method=Method.NOTIFICATION_ROOTS_LIST_CHANGED)
+        await self.transport.send_notification(notification=notification)
 
-    async def disconnect(self)->None:
+    async def shutdown(self)->None:
         await self.transport.disconnect()

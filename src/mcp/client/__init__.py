@@ -64,7 +64,7 @@ class Client:
         if name not in self.sessions:
             raise ValueError(f"Session {name} not found")
         session=self.sessions.get(name)
-        await session.disconnect()
+        await session.shutdown()
         del self.sessions[name]
 
     async def create_all_sessions(self)->None:

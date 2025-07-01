@@ -58,6 +58,9 @@ class Method(str,Enum):
     PROMPTS_LIST = "prompts/list"
     PROMPTS_GET = "prompts/get"
 
+    # Root methods
+    ROOTS_LIST="roots/list"
+
     # Notification methods
     NOTIFICATION_INITIALIZED = "notifications/initialized"
     NOTIFICATION_ROOTS_LIST_CHANGED = "notifications/roots/list_changed"
