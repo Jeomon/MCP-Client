@@ -54,14 +54,41 @@ class Method(str,Enum):
     TOOLS_LIST = "tools/list"
     TOOLS_CALL = "tools/call"
 
+    # Logging methods
+    LOGGING_SET_LEVEL = "logging/setLevel"
+
+    #Completion methods
+    COMPLETION_COMPLETE = "completion/complete"
+
     # Prompt methods
     PROMPTS_LIST = "prompts/list"
     PROMPTS_GET = "prompts/get"
+
+    # Elicitation methods
+    ELICITATION_CREATE = "elicitation/create"
+
+    # Sampling methods
+    SAMPLING_CREATE_MESSAGE = "sampling/createMessage"
 
     # Root methods
     ROOTS_LIST="roots/list"
 
     # Notification methods
     NOTIFICATION_INITIALIZED = "notifications/initialized"
+    NOTIFICATION_CANCELLED = "notifications/cancelled"
+    NOTIFICATION_PROGRESS = "notifications/progress"
+    NOTIFICATION_MESSAGE = "notifications/message"
+
+    # Resource notifications
+    NOTIFICATION_RESOURCES_LIST_CHANGED = "notifications/resources/list_changed"
+    NOTIFICATION_RESOURCES_UPDATED = "notifications/resources/updated"
+
+    # Prompt notifications
+    NOTIFICATION_PROMPTS_LIST_CHANGED = "notifications/prompts/list_changed"
+
+    # Tools notifications
+    NOTIFICATION_TOOLS_LIST_CHANGED = "notifications/tools/list_changed"
+
+    # Roots notifications
     NOTIFICATION_ROOTS_LIST_CHANGED = "notifications/roots/list_changed"
     

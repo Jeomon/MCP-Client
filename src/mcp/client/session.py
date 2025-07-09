@@ -3,8 +3,8 @@ from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCNotification, Method
 from src.mcp.types.capabilities import ClientCapabilities, RootCapability
 from src.mcp.types.initialize import InitializeResult,InitializeParams
 from src.mcp.types.tools import Tool, ToolRequest, ToolResult
+from src.mcp.client.transport.base import BaseTransport
 from src.mcp.types.prompts import Prompt, PromptResult
-from src.mcp.transport.base import BaseTransport
 from src.mcp.types.info import ClientInfo
 from typing import Optional,Any
 

@@ -16,7 +16,7 @@ class Tool(BaseModel):
     name: str
     description: str
     inputSchema: ToolInputSchema
-    outputSchema: ToolOutputSchema
+    outputSchema: Optional[ToolOutputSchema]=None
     annotations: Optional['Annotations']=None
 
 class ToolRequest(BaseModel):

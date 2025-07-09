@@ -1,10 +1,9 @@
 from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCError, Error, JSONRPCNotification
-from src.mcp.transport.utils import get_default_environment
+from src.mcp.client.transport.utils import get_default_environment
 from src.mcp.types.stdio import StdioServerParams
-from src.mcp.transport.base import BaseTransport
+from src.mcp.client.transport.base import BaseTransport
 from asyncio.subprocess import Process
 from src.mcp.exception import MCPError
-from typing import Any
 import asyncio
 import json
 import sys

@@ -2,17 +2,17 @@ import asyncio
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.mcp.client import Client
+from src.mcp.client import MCPClient
 
 async def main():
-    client=Client.from_config_file("./mcp_servers/config.json")
-    session1=await client.create_session('time-mcp') #SSE Server
-    session2=await client.create_session('greet-mcp') #Streamable Http Server
+    client=MCPClient.from_config_file("./mcp_servers/config.json")
+    # session1=await client.create_session('time-mcp') #SSE Server
+    # session2=await client.create_session('greet-mcp') #Streamable Http Server
     session3=await client.create_session('exa-mcp') #Stdio Server
-    tools_list2=await session2.tools_list()
-    print(tools_list2)
-    tools_list1=await session1.tools_list()
-    print(tools_list1)
+    # tools_list2=await session2.tools_list()
+    # print(tools_list2)
+    # tools_list1=await session1.tools_list()
+    # print(tools_list1)
     tools_list3=await session3.tools_list()
     print(tools_list3)
     await client.close_all_sessions()

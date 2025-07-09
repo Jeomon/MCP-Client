@@ -1,10 +1,10 @@
 from src.mcp.client.utils import create_transport_from_server_config
-from src.mcp.session import Session
 from src.mcp.types.info import ClientInfo
+from src.mcp.client.session import Session
 from typing import Any
 import json
 
-class Client:
+class MCPClient:
     client_info=ClientInfo(name="MCP Client",version="0.1.0")
     def __init__(self,config:dict[str,dict[str,Any]]={})->None:
         self.config=config
@@ -13,11 +13,11 @@ class Client:
             self.config["mcpServers"]={}
         
     @classmethod
-    def from_config(cls,config:dict[str,dict[str,Any]])->'Client':
+    def from_config(cls,config:dict[str,dict[str,Any]])->'MCPClient':
         return cls(config=config)
     
     @classmethod
-    def from_config_file(cls,config_file_path:str)->'Client':
+    def from_config_file(cls,config_file_path:str)->'MCPClient':
         with open(config_file_path) as f:
             config=json.load(f)
         return cls(config=config)
@@ -52,6 +52,7 @@ class Client:
         session=Session(transport=transport,client_info=self.client_info)
         await session.connect()
         initialize_result=await session.initialize()
+        print(initialize_result)
         self.sessions[name]=session
         return session
     

@@ -1,6 +1,5 @@
 from src.mcp.types.json_rpc import JSONRPCRequest,JSONRPCResponse,JSONRPCError,JSONRPCNotification
 from abc import abstractmethod,ABC
-from typing import Any,Dict
 
 class BaseTransport(ABC):
     """
