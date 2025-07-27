@@ -1,11 +1,11 @@
-from src.mcp.client import Client
+from src.mcp.client import MCPClient
 import asyncio
 
 async def main():
-    client=Client.from_config_file('./mcp_servers/config.json')
+    client=MCPClient.from_config_file('./mcp_servers/config.json')
     session=await client.create_session('windows-mcp')
-    state=await session.tools_call('State-Tool',{'use_vision':True})
-    print(state.content[1].data[:100])
+    state=await session.tools_call('State-Tool',{'use_vision':False})
+    print(state.content)
     await client.close_session('windows-mcp')
 
 if __name__ == '__main__':

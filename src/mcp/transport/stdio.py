@@ -1,7 +1,7 @@
 from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCError, Error, JSONRPCNotification
-from src.mcp.client.transport.utils import get_default_environment
+from src.mcp.transport.utils import get_default_environment
 from src.mcp.types.stdio import StdioServerParams
-from src.mcp.client.transport.base import BaseTransport
+from src.mcp.transport.base import BaseTransport
 from asyncio.subprocess import Process
 from src.mcp.exception import MCPError
 import asyncio
@@ -18,7 +18,8 @@ class StdioTransport(BaseTransport):
         self.params=params
         self.process:Process = None
         self.listen_task:asyncio.Task = None
-        self.queue:dict[str,asyncio.Queue[JSONRPCResponse|JSONRPCError]]={}
+        self.request_queue:asyncio.Queue[JSONRPCRequest] = asyncio.Queue()
+        self.response_queue:dict[str,asyncio.Queue[JSONRPCResponse|JSONRPCError]]={}
 
     async def connect(self)->None:
         '''
@@ -26,12 +27,41 @@ class StdioTransport(BaseTransport):
         '''
         command=self.params.command
         args=self.params.args
+
         env=get_default_environment() if self.params.env is None else {**get_default_environment(),**self.params.env}
         if sys.platform=='win32' and command=='npx':
             command='cmd'
-            args=['/c','npx',*args]           
+            args=['/c','npx',*args]
+
         self.process=await asyncio.create_subprocess_exec(command,*args,env=env,stdin=asyncio.subprocess.PIPE,stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE,start_new_session=True)
         self.listen_task=asyncio.create_task(self.listen())
+
+    async def receive_request(self)-> JSONRPCRequest|None:
+        '''
+        Receive a JSON RPC request from the MCP server
+
+        Returns:
+            JSON RPC request object
+        '''
+        if self.request_queue.empty():
+            return None
+        return await self.request_queue.get()
+
+    async def receive_response(self,id:str|int)-> JSONRPCResponse|None:
+        '''
+        Receive a JSON RPC response from the MCP server
+
+        Returns:
+            JSON RPC response object
+        '''
+        queue=self.response_queue.get(id)
+        if queue is None:
+            raise ValueError(f"No response queue found for id: {id}")
+        response = await queue.get()
+        if isinstance(response,JSONRPCError):
+            error=response.error
+            raise MCPError(code=error.code,message=error.message)
+        return response
 
     async def send_request(self, request:JSONRPCRequest)->JSONRPCResponse|JSONRPCError:
         '''
@@ -47,25 +77,30 @@ class StdioTransport(BaseTransport):
             MCPError: If the request fails
         '''
         id=request.id
-        self.queue[id]=asyncio.Queue()
+        self.response_queue[id]=asyncio.Queue()
         try:
+            # send the request to the MCP server
             self.process.stdin.write((json.dumps(request.model_dump()) + '\n').encode())
             await self.process.stdin.drain()
-
-            queue=self.queue.get(id)
-            response = await queue.get()
-            if isinstance(response,JSONRPCError):
-                error=response.error
-                raise MCPError(code=error.code,message=error.message)
-            
+            response=await self.receive_response(id=id)
         except asyncio.TimeoutError:
             raise Exception("Request timed out")
         except Exception as e:
             raise Exception(f"Error: {e}")
         finally:
-            self.queue.pop(id)
+            self.response_queue.pop(id)
         return response
-    
+
+    async def send_response(self, response:JSONRPCResponse)->None:
+        '''
+        Send a JSON RPC response to the MCP server
+
+        Args:
+            response: JSON RPC response object
+        '''
+        self.process.stdin.write((json.dumps(response.model_dump()) + '\n').encode())
+        await self.process.stdin.drain()
+
     async def send_notification(self, notification:JSONRPCNotification)->None:
         '''
         Send a JSON RPC notification to the MCP server
@@ -88,24 +123,33 @@ class StdioTransport(BaseTransport):
         buffer=bytearray()
         while True:
             try:
+                # Receive data from the MCP server
                 chunk=await self.process.stdout.read(1024)
                 if not chunk:
                     break # If the process is closed/cancelled
                 buffer.extend(chunk)
                 try:
                     content:dict=json.loads(buffer.decode().strip())
-                    if 'result' in content:
+                    if 'id' in content and 'result' in content:
                         message = JSONRPCResponse.model_validate(content)
-                    elif 'error' in content:
+                    elif 'id' in content and 'error' in content:
+                        id=content.get('id')
                         error=Error.model_validate(content.get('error'))
-                        message=JSONRPCError(id=content.get('id'),error=error,message=error.message)
+                        message=JSONRPCError(id=id,error=error,message=error.message)
+                    elif 'id' in content or 'params' in content:
+                        message=JSONRPCRequest.model_validate(content)
+                    elif 'id' not in content or 'params' in content:
+                        message=JSONRPCNotification.model_validate(content)
                     buffer.clear()  # Reset buffer after successful parse
                 except json.JSONDecodeError:
                     continue # Continue reading until a complete JSON object is received
                 id=message.id
-                if id and id in self.queue.keys():
-                    queue=self.queue.get(id)
+                queue=self.response_queue.get(id)
+                if queue is not None:
                     await queue.put(message)
+                else:
+                    if id is not None:
+                        await self.request_queue.put(message)
             except asyncio.CancelledError:
                 break
             except Exception as e:

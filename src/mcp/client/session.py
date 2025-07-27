@@ -1,13 +1,15 @@
+from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCNotification, JSONRPCResponse, Method
 from src.mcp.types.resources import Resource, ResourceResult, ResourceTemplate
-from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCNotification, Method
 from src.mcp.types.capabilities import ClientCapabilities, RootCapability
 from src.mcp.types.initialize import InitializeResult,InitializeParams
 from src.mcp.types.tools import Tool, ToolRequest, ToolResult
-from src.mcp.client.transport.base import BaseTransport
 from src.mcp.types.prompts import Prompt, PromptResult
+from src.mcp.types.elicitation import ElicitResult
+from src.mcp.transport.base import BaseTransport
+from src.mcp.types.sampling import MessageResult
 from src.mcp.types.info import ClientInfo
+from src.mcp.types.roots import Root
 from typing import Optional,Any
-
 from uuid import uuid4
 
 class Session:
@@ -78,9 +80,21 @@ class Session:
         response=await self.transport.send_request(request=message)
         return ToolResult.model_validate(response.result)
     
+    async def roots_list(self,roots:list[Root])->None:
+        message=JSONRPCResponse(id=self.id,result={"roots":roots})
+        await self.transport.send_response(response=message)
+    
     async def roots_list_changed(self)->None:
         notification=JSONRPCNotification(method=Method.NOTIFICATION_ROOTS_LIST_CHANGED)
         await self.transport.send_notification(notification=notification)
+
+    async def create_sampling_message(self,message:MessageResult)->None:
+        message=JSONRPCResponse(id=self.id,result=message.model_dump())
+        await self.transport.send_response(response=message)
+
+    async def create_elicitation_message(self,message:ElicitResult)->None:
+        message=JSONRPCResponse(id=self.id,result=message.model_dump())
+        await self.transport.send_response(response=message)
 
     async def shutdown(self)->None:
         await self.transport.disconnect()

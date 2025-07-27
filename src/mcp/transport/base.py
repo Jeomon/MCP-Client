@@ -20,7 +20,27 @@ class BaseTransport(ABC):
         pass
 
     @abstractmethod
-    async def send_request(self,request:JSONRPCRequest)->JSONRPCResponse|JSONRPCError:
+    async def receive_request(self)->JSONRPCRequest|None:
+        '''
+        Receive JSON RPC request from the MCP server.
+
+        Returns:
+            JSON RPC request object
+        '''
+        pass
+
+    @abstractmethod
+    async def receive_response(self,id:str|int)->JSONRPCResponse|None:
+        '''
+        Receive JSON RPC response from the MCP server.
+
+        Returns:
+            JSON RPC response object
+        '''
+        pass
+
+    @abstractmethod
+    async def send_request(self,request:JSONRPCRequest)->JSONRPCResponse|JSONRPCError|None:
         '''
         Send JSON RPC request to the MCP server.
 
@@ -31,6 +51,16 @@ class BaseTransport(ABC):
             TimeoutError: If the request times out
             
             Exception: If the request fails
+        '''
+        pass
+
+    @abstractmethod
+    async def send_response(self,response:JSONRPCResponse)->None:
+        '''
+        Send JSON RPC response to the MCP server.
+
+        Args:
+            response: JSONRPCResponse object
         '''
         pass
 

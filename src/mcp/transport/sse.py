@@ -1,5 +1,5 @@
 from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCError, Error, JSONRPCResponse
-from src.mcp.client.transport.base import BaseTransport
+from src.mcp.transport.base import BaseTransport
 from httpx import AsyncClient, Limits
 from httpx_sse import aconnect_sse
 from src.mcp.exception import MCPError

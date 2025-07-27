@@ -1,8 +1,8 @@
-from src.mcp.client.transport.stdio import StdioTransport,StdioServerParams
-from src.mcp.client.transport.streamable_http import StreamableHTTPTransport
-from src.mcp.client.transport.websocket import WebSocketTransport
-from src.mcp.client.transport.sse import SSETransport
-from src.mcp.client.transport.base import BaseTransport
+from src.mcp.transport.stdio import StdioTransport,StdioServerParams
+from src.mcp.transport.streamable_http import StreamableHTTPTransport
+from src.mcp.transport.websocket import WebSocketTransport
+from src.mcp.transport.sse import SSETransport
+from src.mcp.transport.base import BaseTransport
 from typing import Any
 
 def create_transport_from_server_config(server_config:dict[str,Any])->BaseTransport:

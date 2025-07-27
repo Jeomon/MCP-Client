@@ -10,6 +10,11 @@ class JSONRPCRequest(BaseModel):
 
     model_config=ConfigDict(extra='allow')
 
+class JSONRPCNotification(BaseModel):
+    jsonrpc: str=Field(default="2.0")
+    method: Optional['Method']=None
+    params: Optional[dict[str,Any]]=None
+
 class JSONRPCResponse(BaseModel):
     jsonrpc: str=Field(default="2.0")
     id: Optional[str|int]=None
@@ -30,11 +35,6 @@ class Error(BaseModel):
     data: Optional[Any]=None
 
     model_config=ConfigDict(extra='allow')
-
-class JSONRPCNotification(BaseModel):
-    jsonrpc: str=Field(default="2.0")
-    method: Optional['Method']=None
-    params: Optional[dict[str,Any]]=None
 
 class Method(str,Enum):
     # Ping
