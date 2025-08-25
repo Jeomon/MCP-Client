@@ -12,14 +12,15 @@ class Tool:
         self.schema = schema
 
     def __call__(self, func):
-        if self.params:
-            # Store the decorated function and its metadata
-            self.description = self.description or getdoc(func)
-            skip_keys=['title']
-            if self.params is not None:
-                self.schema = {k:{term:content for term,content in v.items() if term not in skip_keys} for k,v in self.params.model_json_schema().get('properties').items() if k not in skip_keys}
-            elif self.schema is not None:
-                self.schema = {k:{term:content for term,content in v.items() if term not in skip_keys} for k,v in self.schema.get('properties').items() if k not in skip_keys}
+        # Store the decorated function and its metadata
+        self.description = self.description or getdoc(func)
+        skip_keys=['title']
+        if self.params is not None:
+            self.schema = {k:{term:content for term,content in v.items() if term not in skip_keys} for k,v in self.params.model_json_schema().get('properties').items() if k not in skip_keys}
+        elif self.schema is not None:
+            self.schema = {k:{term:content for term,content in v.items() if term not in skip_keys} for k,v in self.schema.get('properties').items() if k not in skip_keys}
+        else:
+            raise ValueError('Either params or schema must be provided')
         self.func = func
         return self  # Return the Tool Instance
 
@@ -52,5 +53,5 @@ class Tool:
             params=list(self.schema.get('properties').keys())
         return f"Tool(name={self.name}, description={self.description}, params={params})"
     
-    def get_prompt(self):
+    def get_tool_schema(self):
         return f'''Tool Name: {self.name}\nTool Description: {self.description}\nTool Input: {dumps(self.schema,indent=2)}'''

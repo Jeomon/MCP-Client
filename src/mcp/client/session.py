@@ -17,9 +17,13 @@ class Session:
         self.id=str(uuid4())
         self.transport=transport
         self.client_info=client_info
+        self.initialize_result:Optional[InitializeResult]=None
 
     async def connect(self)->None:
         await self.transport.connect()
+
+    def get_initialize_result(self)->InitializeResult:
+        return self.initialize_result
 
     async def initialize(self)->InitializeResult:
         PROTOCOL_VERSION="2024-11-05"
@@ -29,6 +33,7 @@ class Session:
         response=await self.transport.send_request(request=request)
         json_rpc_notification=JSONRPCNotification(method=Method.NOTIFICATION_INITIALIZED)
         await self.transport.send_notification(json_rpc_notification)
+        self.initialize_result=InitializeResult.model_validate(response.result)
         return InitializeResult.model_validate(response.result)
     
     async def ping(self)->bool:
@@ -74,8 +79,8 @@ class Session:
         response=await self.transport.send_request(request=message)
         return [Tool.model_validate(tool) for tool in response.result.get("tools")]
     
-    async def tools_call(self,name:str,arguments:dict[str,Any])->ToolResult:
-        tool_request=ToolRequest(name=name,arguments=arguments)
+    async def tools_call(self,tool_name:str,**arguments)->ToolResult:
+        tool_request=ToolRequest(name=tool_name,arguments=arguments)
         message=JSONRPCRequest(id=self.id,method=Method.TOOLS_CALL,params=tool_request.model_dump())
         response=await self.transport.send_request(request=message)
         return ToolResult.model_validate(response.result)

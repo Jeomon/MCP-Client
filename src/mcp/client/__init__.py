@@ -7,10 +7,8 @@ import json
 class MCPClient:
     client_info=ClientInfo(name="MCP Client",version="0.1.0")
     def __init__(self,config:dict[str,dict[str,Any]]={})->None:
-        self.config=config
+        self.servers=config.get("mcpServers",{})
         self.sessions:dict[str,Session]={}
-        if self.config.get("mcpServers") is None:
-            self.config["mcpServers"]={}
         
     @classmethod
     def from_config(cls,config:dict[str,dict[str,Any]])->'MCPClient':
@@ -23,56 +21,62 @@ class MCPClient:
         return cls(config=config)
     
     def get_server_names(self)->list[str]:
-        return list(self.config.get("mcpServers").keys())
+        return list(self.servers.keys())
     
-    def add_server(self,name:str,server_config:dict[str,Any])->None:
-        if self.config.get("mcpServers") is None:
-            self.config["mcpServers"]={}
-        self.config["mcpServers"][name]=server_config
+    def get_servers_metadata(self)->list[dict[str,bool]]:
+        return [{
+            'name':name,
+            'description':config.get("description",""),
+            'status':self.is_connected(name)
+        } for name,config in self.servers.items()]
+
+    def to_config_file(self,config_file_path:str)->None:
+        with open(config_file_path,"w") as f:
+            json.dump(self.to_config(),f,indent=4)
+
+    def to_config(self)->dict[str,dict[str,Any]]:
+        return {"mcpServers":self.servers}
+
+    def add_server(self,name:str,config:dict[str,Any],auto_connect:bool=False)->None:
+        self.servers[name]=config
+        if auto_connect:
+            self.create_session(name)
 
     def remove_server(self,name:str)->None:
-        if name in self.get_server_names():
-            del self.config["mcpServers"][name]
-        if name in self.sessions.keys():
-            del self.sessions[name]
-    
-    def save_config(self,config_file_path:str)->None:
-        with open(config_file_path,"w") as f:
-            json.dump(self.config,f,indent=4)
+        if self.get_session(name):
+            self.close_session(name)
+        del self.servers[name]
 
     async def create_session(self,name:str)->Session:
-        servers:dict[str,dict[str,Any]]=self.config.get("mcpServers")
-        if not servers:
-            raise Exception("No MCP servers configured")
-        if name not in servers:
-            raise ValueError(f"Server {name} not found in config")
-        
-        server_config=servers.get(name)
+        if not self.servers:
+            raise Exception("No MCP servers available")
+        if name not in self.servers:
+            raise ValueError(f"{name} not found")
+        server_config=self.servers.get(name)
         transport=create_transport_from_server_config(server_config=server_config)
         session=Session(transport=transport,client_info=self.client_info)
         await session.connect()
-        initialize_result=await session.initialize()
-        print(initialize_result)
+        await session.initialize()
         self.sessions[name]=session
         return session
     
+    def is_connected(self,server_name:str)->bool:
+        return server_name in self.sessions
+    
     def get_session(self,name:str)->Session|None:
-        if name not in self.sessions:
+        if not self.is_connected(name):
             raise ValueError(f"Session {name} not found")
         return self.sessions.get(name)
     
     async def close_session(self,name:str)->None:
-        if name not in self.sessions:
+        if not self.is_connected(name):
             raise ValueError(f"Session {name} not found")
         session=self.sessions.get(name)
         await session.shutdown()
         del self.sessions[name]
 
     async def create_all_sessions(self)->None:
-        servers:dict[str,dict[str,Any]]=self.config.get("mcpServers")
-        if not servers:
-            raise Exception("No MCP servers configured")
-        for name in servers:
+        for name in self.servers:
             await self.create_session(name=name)
 
     async def close_all_sessions(self)->None:

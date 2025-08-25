@@ -2,22 +2,13 @@ from src.mcp.types.resources import TextContent as ResourceTextContent, BinaryCo
 from typing import Optional,Any
 from pydantic import BaseModel
 
-class ToolInputSchema(BaseModel):
-    type: str
-    properties: dict[str,Any]
-    required: Optional[list[str]]=None
-
-class ToolOutputSchema(BaseModel):
-    type: str
-    properties: dict[str,Any]
-    required: Optional[list[str]]=None
-
 class Tool(BaseModel):
     name: str
     description: str
-    inputSchema: ToolInputSchema
-    outputSchema: Optional[ToolOutputSchema]=None
+    inputSchema: dict[str,Any]
+    outputSchema: Optional[dict[str,Any]]=None
     annotations: Optional['Annotations']=None
+
 
 class ToolRequest(BaseModel):
     name: str
