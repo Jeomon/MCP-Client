@@ -19,13 +19,13 @@
             "url":"http://localhost:8081/sse"
         },
         "greet-mcp":{
-            "url":"http://localhost:8000/mcp/"
+            "url":"http://127.0.0.1:8000/mcp/"
         },
         "windows-mcp": {
             "command": "uv",
             "args": [
                 "--directory",
-                "D:\\Personal Projects\\Windows-MCP",
+                "D:\\Projects\\Windows-MCP",
                 "run",
                 "main.py"
             ]

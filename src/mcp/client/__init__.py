@@ -1,18 +1,24 @@
 from src.mcp.client.utils import create_transport_from_server_config
 from src.mcp.types.info import ClientInfo
 from src.mcp.client.session import Session
+from typing import Callable, Optional
 from typing import Any
 import json
 
 class MCPClient:
     client_info=ClientInfo(name="MCP Client",version="0.1.0")
-    def __init__(self,config:dict[str,dict[str,Any]]={})->None:
+    def __init__(self,config:dict[str,dict[str,Any]]={},sampling_callback:Optional[Callable]=None,elicitation_callback:Optional[Callable]=None,list_roots_callback:Optional[Callable]=None,logging_callback:Optional[Callable]=None,message_handler=None)->None:
         self.servers=config.get("mcpServers",{})
+        self.sampling_callback=sampling_callback
+        self.list_roots_callback=list_roots_callback
+        self.elicitation_callback=elicitation_callback
+        self.logging_callback=logging_callback
+        self.message_handler=message_handler
         self.sessions:dict[str,Session]={}
         
     @classmethod
-    def from_config(cls,config:dict[str,dict[str,Any]])->'MCPClient':
-        return cls(config=config)
+    def from_config(cls,config:dict[str,dict[str,Any]],sampling_callback:Optional[Callable]=None,elicitation_callback:Optional[Callable]=None,list_roots_callback:Optional[Callable]=None,logging_callback:Optional[Callable]=None)->'MCPClient':
+        return cls(config=config,sampling_callback=sampling_callback,elicitation_callback=elicitation_callback,list_roots_callback=list_roots_callback,logging_callback=logging_callback)
     
     @classmethod
     def from_config_file(cls,config_file_path:str)->'MCPClient':
@@ -56,7 +62,11 @@ class MCPClient:
         transport=create_transport_from_server_config(server_config=server_config)
         session=Session(transport=transport,client_info=self.client_info)
         await session.connect()
-        await session.initialize()
+        await session.initialize(**{
+            "list_roots_callback":self.list_roots_callback,
+            "sampling_callback":self.sampling_callback,
+            "elicitation_callback":self.elicitation_callback
+        })
         self.sessions[name]=session
         return session
     

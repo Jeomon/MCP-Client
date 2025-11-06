@@ -1,6 +1,6 @@
+from src.mcp.types.capabilities import ClientCapabilities, RootCapability, SamplingCapability, ElicitationCapability
 from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCNotification, JSONRPCResponse, Method
 from src.mcp.types.resources import Resource, ResourceResult, ResourceTemplate
-from src.mcp.types.capabilities import ClientCapabilities, RootCapability
 from src.mcp.types.initialize import InitializeResult,InitializeParams
 from src.mcp.types.tools import Tool, ToolRequest, ToolResult
 from src.mcp.types.prompts import Prompt, PromptResult
@@ -8,8 +8,9 @@ from src.mcp.types.elicitation import ElicitResult
 from src.mcp.transport.base import BaseTransport
 from src.mcp.types.sampling import MessageResult
 from src.mcp.types.info import ClientInfo
+from typing import Optional,Any,Callable
+from src.mcp.exception import MCPError
 from src.mcp.types.roots import Root
-from typing import Optional,Any
 from uuid import uuid4
 
 class Session:
@@ -25,14 +26,16 @@ class Session:
     def get_initialize_result(self)->InitializeResult:
         return self.initialize_result
 
-    async def initialize(self)->InitializeResult:
+    async def initialize(self,list_roots_callback:Optional[Callable]=None,sampling_callback:Optional[Callable]=None,elicitation_callback:Optional[Callable]=None)->InitializeResult:
         PROTOCOL_VERSION="2024-11-05"
-        roots=RootCapability(listChanged=True)
-        params=InitializeParams(clientInfo=self.client_info,capabilities=ClientCapabilities(roots=roots),protocolVersion=PROTOCOL_VERSION)
+        roots=RootCapability(listChanged=True) if list_roots_callback else None
+        sampling=SamplingCapability() if sampling_callback else None
+        elicitation=ElicitationCapability() if elicitation_callback else None
+        params=InitializeParams(clientInfo=self.client_info,capabilities=ClientCapabilities(roots=roots,sampling=sampling,elicitation=elicitation),protocolVersion=PROTOCOL_VERSION)
         request=JSONRPCRequest(id=self.id,method=Method.INITIALIZE,params=params.model_dump(exclude_none=True))
         response=await self.transport.send_request(request=request)
-        json_rpc_notification=JSONRPCNotification(method=Method.NOTIFICATION_INITIALIZED)
-        await self.transport.send_notification(json_rpc_notification)
+        notification=JSONRPCNotification(method=Method.NOTIFICATION_INITIALIZED)
+        await self.transport.send_notification(notification=notification)
         self.initialize_result=InitializeResult.model_validate(response.result)
         return InitializeResult.model_validate(response.result)
     
