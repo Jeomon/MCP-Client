@@ -10,9 +10,9 @@ from src.mcp.types.elicitation import ElicitRequest
 from src.mcp.types.stdio import StdioServerParams
 from src.mcp.types.sampling import MessageRequest
 from src.mcp.transport.base import BaseTransport
+from src.mcp.types.roots import ListRootsRequest
 from src.mcp.exception import MCPError
 from asyncio.subprocess import Process
-from src.mcp.types.roots import Root
 import asyncio
 import json
 import sys
@@ -110,7 +110,7 @@ class StdioTransport(BaseTransport):
                 return JSONRPCResponse(id=request.id,result=result)
             
             case Method.ROOTS_LIST:
-                params=Root.model_validate(request.params)
+                params=ListRootsRequest.model_validate(request.params)
                 list_roots_callback = self.callbacks.get("list_roots")
                 if list_roots_callback is None:
                     raise Exception("List roots callback not found")
