@@ -4,6 +4,7 @@ from typing import Literal,Optional
 
 Role=Literal["user","assistant"]
 StopReason=Literal['endTurn','stopSequence','maxTokens']
+IncludeContext=Literal['none','thisService','allServices']
 
 class Message(BaseModel):
     role: Role
@@ -28,3 +29,13 @@ class ModelPreferences(BaseModel):
     costPriority:Optional[float]=Field(le=0.0,ge=1.0)
     model_config=ConfigDict(extra='allow')
 
+class MessageRequest(BaseModel):
+    messages: list[Message]
+    modelPreferences:ModelPreferences|None=None
+    systemPrompt:str|None=None
+    IncludeContext:'IncludeContext'|None=None
+    temperature:float|None=None
+    maxTokens:int
+    stopSequences:list[str]|None=None
+    metadata:dict[str,str]|None=None
+    model_config=ConfigDict(extra='allow')

@@ -14,7 +14,7 @@ from src.mcp.types.roots import Root
 from uuid import uuid4
 
 class Session:
-    def __init__(self,transport:BaseTransport,client_info:ClientInfo)->None:
+    def __init__(self,transport:BaseTransport,client_info:ClientInfo,)->None:
         self.id=str(uuid4())
         self.transport=transport
         self.client_info=client_info
@@ -26,11 +26,11 @@ class Session:
     def get_initialize_result(self)->InitializeResult:
         return self.initialize_result
 
-    async def initialize(self,list_roots_callback:Optional[Callable]=None,sampling_callback:Optional[Callable]=None,elicitation_callback:Optional[Callable]=None)->InitializeResult:
+    async def initialize(self,)->InitializeResult:
         PROTOCOL_VERSION="2024-11-05"
-        roots=RootCapability(listChanged=True) if list_roots_callback else None
-        sampling=SamplingCapability() if sampling_callback else None
-        elicitation=ElicitationCapability() if elicitation_callback else None
+        roots=RootCapability(listChanged=True) if self.transport.callbacks.get("list_roots") else None
+        sampling=SamplingCapability() if self.transport.callbacks.get("sampling") else None
+        elicitation=ElicitationCapability() if self.transport.callbacks.get("elicitation") else None
         params=InitializeParams(clientInfo=self.client_info,capabilities=ClientCapabilities(roots=roots,sampling=sampling,elicitation=elicitation),protocolVersion=PROTOCOL_VERSION)
         request=JSONRPCRequest(id=self.id,method=Method.INITIALIZE,params=params.model_dump(exclude_none=True))
         response=await self.transport.send_request(request=request)
@@ -88,21 +88,9 @@ class Session:
         response=await self.transport.send_request(request=message)
         return ToolResult.model_validate(response.result)
     
-    async def roots_list(self,roots:list[Root])->None:
-        message=JSONRPCResponse(id=self.id,result={"roots":roots})
-        await self.transport.send_response(response=message)
-    
     async def roots_list_changed(self)->None:
         notification=JSONRPCNotification(method=Method.NOTIFICATION_ROOTS_LIST_CHANGED)
         await self.transport.send_notification(notification=notification)
-
-    async def create_sampling_message(self,message:MessageResult)->None:
-        message=JSONRPCResponse(id=self.id,result=message.model_dump())
-        await self.transport.send_response(response=message)
-
-    async def create_elicitation_message(self,message:ElicitResult)->None:
-        message=JSONRPCResponse(id=self.id,result=message.model_dump())
-        await self.transport.send_response(response=message)
 
     async def shutdown(self)->None:
         await self.transport.disconnect()

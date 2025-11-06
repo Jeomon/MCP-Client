@@ -5,7 +5,7 @@ from src.mcp.types.json_rpc import (
     JSONRPCNotification,
 )
 from abc import ABC, abstractmethod
-
+from typing import Callable
 
 class BaseTransport(ABC):
     """
@@ -13,6 +13,9 @@ class BaseTransport(ABC):
     Provides the minimal interface for sending requests,
     sending notifications, and listening for incoming messages.
     """
+
+    def attach_callbacks(self, callbacks:dict[str,Callable]):
+        self.callbacks = callbacks
 
     @abstractmethod
     async def connect(self) -> None:
@@ -54,5 +57,18 @@ class BaseTransport(ABC):
 
         Args:
             notification: JSONRPCNotification object
+        """
+        pass
+
+    @abstractmethod
+    async def recieved_request(self, request: JSONRPCRequest) -> JSONRPCResponse:
+        """
+        Receive a JSON-RPC request from the MCP server and await response.
+
+        Args:
+            request: JSONRPCRequest object
+
+        Returns:
+            JSONRPCResponse
         """
         pass

@@ -3,13 +3,16 @@ from src.mcp.types.json_rpc import (
     JSONRPCResponse,
     JSONRPCError,
     JSONRPCNotification,
-    Error,
+    Error, Method
 )
 from src.mcp.transport.utils import get_default_environment
+from src.mcp.types.elicitation import ElicitRequest
 from src.mcp.types.stdio import StdioServerParams
+from src.mcp.types.sampling import MessageRequest
 from src.mcp.transport.base import BaseTransport
 from src.mcp.exception import MCPError
 from asyncio.subprocess import Process
+from src.mcp.types.roots import Root
 import asyncio
 import json
 import sys
@@ -77,6 +80,45 @@ class StdioTransport(BaseTransport):
             raise MCPError(code=response.error.code, message=response.error.message)
 
         return response
+    
+    async def send_response(self, response: JSONRPCResponse):
+        if not self.process or not self.process.stdin:
+            raise MCPError(code=-1, message="Process not connected")
+
+        self.process.stdin.write((json.dumps(response.model_dump()) + "\n").encode())
+        await self.process.stdin.drain()
+    
+    async def recieved_request(self, request: JSONRPCRequest) -> JSONRPCResponse:
+        """
+        Receive a JSON-RPC request from the MCP server and await response.
+        """
+        match request.method:
+            case Method.SAMPLING_CREATE_MESSAGE:
+                params=MessageRequest.model_validate(request.params)
+                sampling_callback = self.callbacks.get("sampling")
+                if sampling_callback is None:
+                    raise Exception("Sampling callback not found")
+                result=await sampling_callback(params)
+                return JSONRPCResponse(id=request.id,result=result)
+            
+            case Method.ELICITATION_CREATE:
+                params=ElicitRequest.model_validate(request.params)
+                elicitation_callback = self.callbacks.get("elicitation")
+                if elicitation_callback is None:
+                    raise Exception("Elicitation callback not found")
+                result=await elicitation_callback(params)
+                return JSONRPCResponse(id=request.id,result=result)
+            
+            case Method.ROOTS_LIST:
+                params=Root.model_validate(request.params)
+                list_roots_callback = self.callbacks.get("list_roots")
+                if list_roots_callback is None:
+                    raise Exception("List roots callback not found")
+                result=await list_roots_callback(params)
+                return JSONRPCResponse(id=request.id,result=result)
+            
+            case _:
+                raise MCPError(code=-1, message=f"Unknown method: {request.method}")
 
     async def send_notification(self, notification: JSONRPCNotification) -> None:
         """
@@ -104,9 +146,13 @@ class StdioTransport(BaseTransport):
                     content: dict = json.loads(buffer.decode().strip())
                     buffer.clear()
 
-                    if "result" in content:
+                    if "result" in content: # Response
                         message = JSONRPCResponse.model_validate(content)
-                    elif "error" in content:
+                    elif "method" in content: # Request
+                        message = JSONRPCRequest.model_validate(content)
+                        response=await self.recieved_request(message)
+                        await self.send_response(response)
+                    elif "error" in content: # Error
                         err = Error.model_validate(content["error"])
                         message = JSONRPCError(id=content.get("id"), error=err, message=err.message)
                     else:

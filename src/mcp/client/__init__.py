@@ -60,13 +60,14 @@ class MCPClient:
             raise ValueError(f"{name} not found")
         server_config=self.servers.get(name)
         transport=create_transport_from_server_config(server_config=server_config)
+        transport.attach_callbacks(**{
+            'sampling':self.sampling_callback,
+            'elicitation':self.elicitation_callback,
+            'list_roots':self.list_roots_callback,
+        })
         session=Session(transport=transport,client_info=self.client_info)
         await session.connect()
-        await session.initialize(**{
-            "list_roots_callback":self.list_roots_callback,
-            "sampling_callback":self.sampling_callback,
-            "elicitation_callback":self.elicitation_callback
-        })
+        await session.initialize()
         self.sessions[name]=session
         return session
     
