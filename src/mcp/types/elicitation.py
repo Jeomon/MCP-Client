@@ -1,5 +1,10 @@
+from typing import Optional, Literal, Any, Protocol
 from pydantic import BaseModel,ConfigDict,Field
-from typing import Optional, Literal, Any
+from src.mcp.types.json_rpc import Error
+
+class ElicitationFn(Protocol):
+    async def __call__(request:'ElicitRequest')->'ElicitResult'|Error:
+        ...
 
 class ElicitRequest(BaseModel):
     message:str

@@ -2,7 +2,7 @@ import asyncio
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.mcp.client import MCPClient
+from src.mcp.client.service import MCPClient
 
 async def main():
     client=MCPClient.from_config_file("./mcp_servers/config.json")

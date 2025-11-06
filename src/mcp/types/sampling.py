@@ -1,10 +1,15 @@
 from src.mcp.types.prompts import TextContent,ImageContent,AudioContent
 from pydantic import BaseModel,Field,ConfigDict
-from typing import Literal,Optional
+from typing import Literal,Optional,Protocol
+from src.mcp.types.json_rpc import Error
 
 Role=Literal["user","assistant"]
 StopReason=Literal['endTurn','stopSequence','maxTokens']
 IncludeContext=Literal['none','thisService','allServices']
+
+class SamplingFn(Protocol):
+    async def __call__(self,params:'MessageRequest')->'MessageResult'|Error:
+        ...
 
 class Message(BaseModel):
     role: Role

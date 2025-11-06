@@ -1,4 +1,4 @@
-from src.mcp.client import MCPClient
+from src.mcp.client.service import MCPClient
 from time import sleep
 import asyncio
 

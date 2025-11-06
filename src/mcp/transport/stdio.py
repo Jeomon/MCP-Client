@@ -98,7 +98,7 @@ class StdioTransport(BaseTransport):
                 sampling_callback = self.callbacks.get("sampling")
                 if sampling_callback is None:
                     raise Exception("Sampling callback not found")
-                result=await sampling_callback(params)
+                result=await sampling_callback(params=params)
                 return JSONRPCResponse(id=request.id,result=result)
             
             case Method.ELICITATION_CREATE:
@@ -106,7 +106,7 @@ class StdioTransport(BaseTransport):
                 elicitation_callback = self.callbacks.get("elicitation")
                 if elicitation_callback is None:
                     raise Exception("Elicitation callback not found")
-                result=await elicitation_callback(params)
+                result=await elicitation_callback(params=params)
                 return JSONRPCResponse(id=request.id,result=result)
             
             case Method.ROOTS_LIST:
@@ -114,7 +114,7 @@ class StdioTransport(BaseTransport):
                 list_roots_callback = self.callbacks.get("list_roots")
                 if list_roots_callback is None:
                     raise Exception("List roots callback not found")
-                result=await list_roots_callback(params)
+                result=await list_roots_callback(params=params)
                 return JSONRPCResponse(id=request.id,result=result)
             
             case _:
