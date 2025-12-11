@@ -67,6 +67,16 @@ class SSETransport(BaseTransport):
         }
         await self.client.post(self.session_url, headers=headers, json=notification.model_dump())
 
+    async def send_response(self, response: JSONRPCResponse):
+        """Send a JSON-RPC response."""
+        if not self.session_url:
+             raise MCPError(code=-1, message="Session not initialized.")
+        headers = {
+            **self.headers,
+            "Content-Type": "application/json",
+        }
+        await self.client.post(self.session_url, headers=headers, json=response.model_dump())
+
     async def listen(self):
         """Listen for messages from the MCP server."""
         async with aconnect_sse(self.client, "GET", self.url) as iter:
@@ -78,19 +88,28 @@ class SSETransport(BaseTransport):
 
                     elif obj.event == "message":
                         content = json.loads(obj.data)
-                        message_id = str(content.get("id"))
+                        
+                        if "result" in content: # Response
+                             message_id = str(content.get("id"))
+                             message = JSONRPCResponse.model_validate(content)
+                             future = self.pending.pop(message_id, None)
+                             if future and not future.done():
+                                 future.set_result(message)
+                        
+                        elif "method" in content: # Request
+                            message = JSONRPCRequest.model_validate(content)
+                            response = await self.handle_request(message)
+                            await self.send_response(response)
 
-                        if "result" in content:
-                            message = JSONRPCResponse.model_validate(content)
-                        elif "error" in content:
+                        elif "error" in content: # Error
+                            message_id = str(content.get("id"))
                             error = Error.model_validate(content["error"])
                             message = JSONRPCError(id=message_id, error=error, message=error.message)
+                            future = self.pending.pop(message_id, None)
+                            if future and not future.done():
+                                future.set_result(message)
                         else:
                             continue
-
-                        future = self.pending.pop(message_id, None)
-                        if future and not future.done():
-                            future.set_result(message)
 
                 except Exception as e:
                     print(f"Error processing SSE message: {e}")

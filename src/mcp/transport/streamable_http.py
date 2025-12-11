@@ -38,6 +38,21 @@ class StreamableHTTPTransport(BaseTransport):
         )
         self.listen_task = asyncio.create_task(self.listen())
 
+    async def send_response(self, response: JSONRPCResponse):
+        """Send a JSON-RPC response."""
+        if not self.client:
+             raise MCPError(code=-1, message="HTTP client not connected")
+        
+        headers = {
+            **self.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+        }
+        if self.mcp_session_id:
+            headers["mcp-session-id"] = self.mcp_session_id
+
+        await self.client.post(self.url, headers=headers, json=response.model_dump())
+
     async def listen(self):
         """
         Persistent stream listener for JSON-RPC responses.
@@ -55,9 +70,7 @@ class StreamableHTTPTransport(BaseTransport):
                     
                     if b'\n' in buffer:
                         parts = buffer.split(b'\n')
-                        # The last part is either the remaining partial line or empty if the chunk ended with a newline
-                        # We keep it in the buffer for the next chunk
-                        buffer = bytearray(parts.pop())
+                        buffer = parts.pop()
                         
                         for part in parts:
                             if not part.strip():
@@ -67,24 +80,32 @@ class StreamableHTTPTransport(BaseTransport):
                             except json.JSONDecodeError:
                                 continue
 
-                            msg_id = content.get("id")
-                            message = None
-
                             if "result" in content:
+                                msg_id = content.get("id")
                                 message = JSONRPCResponse.model_validate(content)
+                                if msg_id in self.pending:
+                                    fut = self.pending.pop(msg_id)
+                                    if not fut.done():
+                                        fut.set_result(message)
+
+                            elif "method" in content:
+                                message = JSONRPCRequest.model_validate(content)
+                                response = await self.handle_request(message)
+                                await self.send_response(response)
+
                             elif "error" in content:
+                                msg_id = content.get("id")
                                 err = Error.model_validate(content["error"])
                                 message = JSONRPCError(
                                     id=msg_id,
                                     error=err,
                                     message=err.message,
                                 )
+                                if msg_id in self.pending:
+                                    fut = self.pending.pop(msg_id)
+                                    if not fut.done():
+                                        fut.set_result(message)
 
-                            # Resolve pending Future
-                            if msg_id in self.pending:
-                                fut = self.pending.pop(msg_id)
-                                if not fut.done():
-                                    fut.set_result(message)
         except Exception as e:
             print(f"[Listen Error] {e}")
 
