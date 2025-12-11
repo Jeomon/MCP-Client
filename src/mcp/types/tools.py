@@ -1,10 +1,10 @@
 from src.mcp.types.resources import TextContent as ResourceTextContent, BinaryContent as ResourceBinaryContent
 from typing import Optional,Any
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class Tool(BaseModel):
     name: str
-    description: str
+    description: Optional[str]=None
     inputSchema: dict[str,Any]
     outputSchema: Optional[dict[str,Any]]=None
     annotations: Optional['Annotations']=None
@@ -43,3 +43,14 @@ class Annotations(BaseModel):
     destructiveHint: Optional[bool]=None
     idempotentHint: Optional[bool]=None
     openWorldHint: Optional[bool]=None
+
+# Request Types
+class ToolsListRequest(BaseModel):
+    cursor: Optional[str]=None
+    model_config = ConfigDict(extra="allow")
+
+# Result Types
+class ToolsListResult(BaseModel):
+    tools: list[Tool]
+    nextCursor: Optional[str]=None
+    model_config = ConfigDict(extra="allow")
