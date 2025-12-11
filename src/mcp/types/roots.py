@@ -1,9 +1,9 @@
+from typing import Optional,Protocol,Union
 from pydantic import BaseModel,ConfigDict
 from src.mcp.types.json_rpc import Error
-from typing import Optional,Protocol
 
 class ListRootsFn(Protocol):
-    def __call__(self,params:'ListRootsRequest') -> 'ListRootsResult'|Error:
+    def __call__(self,params:'ListRootsRequest') -> Union['ListRootsResult',Error]:
         ...
 
 class Root(BaseModel):

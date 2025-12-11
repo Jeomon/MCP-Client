@@ -61,7 +61,7 @@ class MCPClient:
             raise ValueError(f"{name} not found")
         server_config=self.servers.get(name)
         transport=create_transport_from_server_config(server_config=server_config)
-        transport.attach_callbacks(**{
+        transport.attach_callbacks({
             'sampling':self.sampling_callback,
             'elicitation':self.elicitation_callback,
             'list_roots':self.list_roots_callback,
@@ -79,6 +79,9 @@ class MCPClient:
         if not self.is_connected(name):
             raise ValueError(f"Session {name} not found")
         return self.sessions.get(name)
+    
+    def get_all_sessions(self)->dict[str,Session]:
+        return self.sessions
     
     async def close_session(self,name:str)->None:
         if not self.is_connected(name):

@@ -29,6 +29,17 @@
                 "run",
                 "main.py"
             ]
+        },
+        "code-mcp": {
+            "command": "uv",
+            "args": [
+                "--directory",
+                "D:\\Projects\\Code-MCP",
+                "run",
+                "main.py",
+                "-w",
+                "D:\\temp-project"
+            ]
         }
     }
 }

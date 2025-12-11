@@ -15,7 +15,6 @@ from uuid import uuid4
 
 class Session:
     def __init__(self,transport:BaseTransport,client_info:ClientInfo,)->None:
-        self.id=str(uuid4())
         self.transport=transport
         self.client_info=client_info
         self.initialize_result:Optional[InitializeResult]=None
@@ -32,60 +31,60 @@ class Session:
         sampling=SamplingCapability() if self.transport.callbacks.get("sampling") else None
         elicitation=ElicitationCapability() if self.transport.callbacks.get("elicitation") else None
         params=InitializeParams(clientInfo=self.client_info,capabilities=ClientCapabilities(roots=roots,sampling=sampling,elicitation=elicitation),protocolVersion=PROTOCOL_VERSION)
-        request=JSONRPCRequest(id=self.id,method=Method.INITIALIZE,params=params.model_dump(exclude_none=True))
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.INITIALIZE,params=params.model_dump(exclude_none=True))
         response=await self.transport.send_request(request=request)
         notification=JSONRPCNotification(method=Method.NOTIFICATION_INITIALIZED)
         await self.transport.send_notification(notification=notification)
         self.initialize_result=InitializeResult.model_validate(response.result)
-        return InitializeResult.model_validate(response.result)
+        return self.initialize_result
     
     async def ping(self)->bool:
-        request=JSONRPCRequest(id=self.id,method=Method.PING)
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.PING)
         response=await self.transport.send_request(request=request)
         return response is not None
 
     async def prompts_list(self)->list[Prompt]:
-        request=JSONRPCRequest(id=self.id,method=Method.PROMPTS_LIST)
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.PROMPTS_LIST)
         response=await self.transport.send_request(request=request)
         return [Prompt.model_validate(prompt) for prompt in response.result.get("prompts")]
     
     async def prompts_get(self,name:str,arguments:Optional[dict[str,Any]]=None)->PromptResult:
-        request=JSONRPCRequest(id=self.id,method=Method.PROMPTS_GET,params={"name":name,"arguments":arguments})
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.PROMPTS_GET,params={"name":name,"arguments":arguments})
         response=await self.transport.send_request(request=request)
         return PromptResult.model_validate(response.result)
     
     async def resources_list(self,cursor:Optional[str]=None)->list[Resource]:
-        request=JSONRPCRequest(id=self.id,method=Method.RESOURCES_LIST,params={"cursor":cursor} if cursor else {})
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.RESOURCES_LIST,params={"cursor":cursor} if cursor else {})
         response=await self.transport.send_request(request=request)
         return [Resource.model_validate(resource) for resource in response.result.get("resources")]
     
     async def resources_read(self,uri:str)->ResourceResult:
-        request=JSONRPCRequest(id=self.id,method=Method.RESOURCES_READ,params={"uri":uri})
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.RESOURCES_READ,params={"uri":uri})
         response=await self.transport.send_request(request=request)
-        return [ResourceResult.model_validate(resource) for resource in response.result.get("contents")]
+        return ResourceResult.model_validate(response.result)
     
     async def resources_templates_list(self)->list[ResourceTemplate]:
-        request=JSONRPCRequest(id=self.id,method=Method.RESOURCES_TEMPLATES_LIST)
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.RESOURCES_TEMPLATES_LIST)
         response=await self.transport.send_request(request=request)
         return [ResourceTemplate.model_validate(template) for template in response.result.get("resourceTemplates")]
     
     async def resources_subscribe(self,uri:str)->None:
-        request=JSONRPCRequest(id=self.id,method=Method.RESOURCES_SUBSCRIBE,params={"uri":uri})
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.RESOURCES_SUBSCRIBE,params={"uri":uri})
         await self.transport.send_request(request=request)
 
     async def resources_unsubscribe(self,uri:str)->None:
-        request=JSONRPCRequest(id=self.id,method=Method.RESOURCES_UNSUBSCRIBE,params={"uri":uri})
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.RESOURCES_UNSUBSCRIBE,params={"uri":uri})
         await self.transport.send_request(request=request)
     
     async def tools_list(self,cursor:Optional[str]=None)->list[Tool]:
-        message=JSONRPCRequest(id=self.id,method=Method.TOOLS_LIST,params={"cursor":cursor} if cursor else {})
-        response=await self.transport.send_request(request=message)
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.TOOLS_LIST,params={"cursor":cursor} if cursor else {})
+        response=await self.transport.send_request(request=request)
         return [Tool.model_validate(tool) for tool in response.result.get("tools")]
     
     async def tools_call(self,tool_name:str,**arguments)->ToolResult:
         tool_request=ToolRequest(name=tool_name,arguments=arguments)
-        message=JSONRPCRequest(id=self.id,method=Method.TOOLS_CALL,params=tool_request.model_dump())
-        response=await self.transport.send_request(request=message)
+        request=JSONRPCRequest(id=str(uuid4()),method=Method.TOOLS_CALL,params=tool_request.model_dump())
+        response=await self.transport.send_request(request=request)
         return ToolResult.model_validate(response.result)
     
     async def roots_list_changed(self)->None:
