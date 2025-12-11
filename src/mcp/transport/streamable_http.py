@@ -52,17 +52,21 @@ class StreamableHTTPTransport(BaseTransport):
 
                 async for chunk in response.aiter_bytes():
                     buffer.extend(chunk)
-                    try:
-                        decoded = buffer.decode(errors="ignore").strip()
-                        for raw in decoded.splitlines():
-                            if not raw.strip():
+                    
+                    if b'\n' in buffer:
+                        parts = buffer.split(b'\n')
+                        # The last part is either the remaining partial line or empty if the chunk ended with a newline
+                        # We keep it in the buffer for the next chunk
+                        buffer = bytearray(parts.pop())
+                        
+                        for part in parts:
+                            if not part.strip():
                                 continue
                             try:
-                                content = json.loads(raw)
+                                content = json.loads(part.decode(errors="ignore"))
                             except json.JSONDecodeError:
                                 continue
 
-                            print(content)
                             msg_id = content.get("id")
                             message = None
 
@@ -81,12 +85,6 @@ class StreamableHTTPTransport(BaseTransport):
                                 fut = self.pending.pop(msg_id)
                                 if not fut.done():
                                     fut.set_result(message)
-
-                            buffer.clear()
-
-                    except Exception as e:
-                        print(f"[Stream Parse Error] {e}")
-                        continue
         except Exception as e:
             print(f"[Listen Error] {e}")
 

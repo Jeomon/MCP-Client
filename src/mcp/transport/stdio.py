@@ -134,17 +134,14 @@ class StdioTransport(BaseTransport):
         """
         Listen for responses from the subprocess (stdout).
         """
-        buffer = bytearray()
         while True:
             try:
-                chunk = await self.process.stdout.read(1024)
-                if not chunk:
+                line = await self.process.stdout.readline()
+                if not line:
                     break
-                buffer.extend(chunk)
-
+                
                 try:
-                    content: dict = json.loads(buffer.decode().strip())
-                    buffer.clear()
+                    content: dict = json.loads(line.decode().strip())
 
                     if "result" in content: # Response
                         message = JSONRPCResponse.model_validate(content)

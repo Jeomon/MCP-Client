@@ -1,4 +1,4 @@
-from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCError, Error
+from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCError, Error, JSONRPCNotification
 from src.mcp.exception import MCPError
 from typing import Optional, Dict
 import websockets
@@ -74,14 +74,14 @@ class WebSocketTransport:
             response = await asyncio.wait_for(future, timeout=30)
         except asyncio.TimeoutError:
             self.pending.pop(request.id, None)
-            raise MCPError(code=-1, message="Request timed out")
+            raise MCPError(code=-1, message="Request timed out.")
 
         if isinstance(response, JSONRPCError):
             raise MCPError(code=response.error.code, message=response.error.message)
 
         return response
 
-    async def send_notification(self, notification: JSONRPCRequest):
+    async def send_notification(self, notification: JSONRPCNotification):
         """
         Send a JSON-RPC notification (fire and forget).
         """

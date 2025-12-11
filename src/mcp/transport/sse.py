@@ -1,4 +1,4 @@
-from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCError, Error, JSONRPCResponse
+from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCError, Error, JSONRPCResponse, JSONRPCNotification
 from src.mcp.transport.base import BaseTransport
 from httpx import AsyncClient, Limits
 from httpx_sse import aconnect_sse
@@ -57,7 +57,7 @@ class SSETransport(BaseTransport):
 
         return response
 
-    async def send_notification(self, notification: JSONRPCResponse):
+    async def send_notification(self, notification: JSONRPCNotification):
         """Send a notification without expecting a response."""
         if not self.session_url:
             raise MCPError(code=-1, message="Session not initialized.")

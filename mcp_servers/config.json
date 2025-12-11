@@ -1,8 +1,11 @@
 {
     "mcpServers": {
         "calculator-mcp": {
-            "command": "python",
-            "args": ["./mcp_servers/calculator_mcp.py"]
+            "command": "uv",
+            "args": [
+                "run",
+                "./mcp_servers/calculator_mcp.py"
+            ]
         },
         "exa-mcp": {
             "command": "npx",
@@ -15,11 +18,11 @@
                 "EXA_API_KEY": "EXA_API_KEY HERE"
             }
         },
-        "time-mcp":{
-            "url":"http://localhost:8081/sse"
+        "time-mcp": {
+            "url": "http://localhost:8081/sse"
         },
-        "greet-mcp":{
-            "url":"http://127.0.0.1:8000/mcp/"
+        "greet-mcp": {
+            "url": "http://127.0.0.1:8000/mcp/"
         },
         "windows-mcp": {
             "command": "uv",

@@ -10,11 +10,12 @@ import json
 
 class MCPClient:
     client_info=ClientInfo(name="MCP Client",version="0.1.0")
-    def __init__(self,config:dict[str,dict[str,Any]]={},sampling_callback:Optional[SamplingFn]=None,elicitation_callback:Optional[ElicitationFn]=None,list_roots_callback:Optional[ListRootsFn]=None)->None:
+    def __init__(self,config:dict[str,dict[str,Any]]={},sampling_callback:Optional[SamplingFn]=None,elicitation_callback:Optional[ElicitationFn]=None,list_roots_callback:Optional[ListRootsFn]=None,logging_callback:Optional[Callable]=None)->None:
         self.servers=config.get("mcpServers",{})
         self.sampling_callback=sampling_callback
         self.list_roots_callback=list_roots_callback
         self.elicitation_callback=elicitation_callback
+        self.logging_callback=logging_callback
         self.sessions:dict[str,Session]={}
         
     @classmethod
