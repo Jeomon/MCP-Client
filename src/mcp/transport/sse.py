@@ -1,4 +1,4 @@
-from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCError, Error, JSONRPCResponse, JSONRPCNotification
+from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCError, Error, JSONRPCResponse, JSONRPCNotification, JSONRPCMessage, JSONRPCResultResponse, JSONRPCErrorResponse
 from src.mcp.transport.base import BaseTransport
 from httpx import AsyncClient, Limits
 from httpx_sse import aconnect_sse
@@ -29,7 +29,7 @@ class SSETransport(BaseTransport):
         self.listen_task = asyncio.create_task(self.listen())
         await self.ready_event.wait()
 
-    async def send_request(self, request: JSONRPCRequest) -> JSONRPCResponse:
+    async def send_request(self, request: JSONRPCMessage) -> JSONRPCResponse:
         """
         Send JSON-RPC request and wait for its response.
         """
@@ -44,7 +44,7 @@ class SSETransport(BaseTransport):
             "Content-Type": "application/json",
         }
 
-        await self.client.post(self.session_url, headers=headers, json=request.model_dump())
+        await self.client.post(self.session_url, headers=headers, json=request.model_dump(by_alias=True))
 
         try:
             response = await asyncio.wait_for(future, timeout=30)
@@ -52,12 +52,12 @@ class SSETransport(BaseTransport):
             self.pending.pop(str(request.id), None)
             raise MCPError(code=-1, message="Request timed out.")
 
-        if isinstance(response, JSONRPCError):
+        if isinstance(response, JSONRPCErrorResponse):
             raise MCPError(code=response.error.code, message=response.error.message)
 
         return response
 
-    async def send_notification(self, notification: JSONRPCNotification):
+    async def send_notification(self, notification: JSONRPCMessage):
         """Send a notification without expecting a response."""
         if not self.session_url:
             raise MCPError(code=-1, message="Session not initialized.")
@@ -65,7 +65,7 @@ class SSETransport(BaseTransport):
             **self.headers,
             "Content-Type": "application/json",
         }
-        await self.client.post(self.session_url, headers=headers, json=notification.model_dump())
+        await self.client.post(self.session_url, headers=headers, json=notification.model_dump(by_alias=True))
 
     async def send_response(self, response: JSONRPCResponse):
         """Send a JSON-RPC response."""
@@ -75,7 +75,7 @@ class SSETransport(BaseTransport):
             **self.headers,
             "Content-Type": "application/json",
         }
-        await self.client.post(self.session_url, headers=headers, json=response.model_dump())
+        await self.client.post(self.session_url, headers=headers, json=response.model_dump(by_alias=True))
 
     async def listen(self):
         """Listen for messages from the MCP server."""
@@ -91,7 +91,7 @@ class SSETransport(BaseTransport):
                         
                         if "result" in content: # Response
                              message_id = str(content.get("id"))
-                             message = JSONRPCResponse.model_validate(content)
+                             message = JSONRPCResultResponse.model_validate(content)
                              future = self.pending.pop(message_id, None)
                              if future and not future.done():
                                  future.set_result(message)
@@ -104,7 +104,7 @@ class SSETransport(BaseTransport):
                         elif "error" in content: # Error
                             message_id = str(content.get("id"))
                             error = Error.model_validate(content["error"])
-                            message = JSONRPCError(id=message_id, error=error, message=error.message)
+                            message = JSONRPCErrorResponse(id=message_id, error=error)
                             future = self.pending.pop(message_id, None)
                             if future and not future.done():
                                 future.set_result(message)
