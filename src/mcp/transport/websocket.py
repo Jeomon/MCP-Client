@@ -1,9 +1,12 @@
 from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCResponse, JSONRPCResultResponse, JSONRPCErrorResponse, JSONRPCError, Error, JSONRPCNotification, JSONRPCMessage
 from src.mcp.exception import MCPError
+from src.mcp.logger import get_logger
 from typing import Optional, Dict
 import websockets
 import asyncio
 import json
+
+logger = get_logger(__name__)
 
 
 from src.mcp.transport.base import BaseTransport
@@ -70,12 +73,12 @@ class WebSocketTransport(BaseTransport):
                         continue
 
                 except Exception as e:
-                    print(f"Error parsing WebSocket message: {e}")
+                    logger.error(f"Error parsing WebSocket message: {e}", exc_info=True)
 
         except websockets.exceptions.ConnectionClosed:
-            print("WebSocket connection closed.")
+            logger.info("WebSocket connection closed.")
         except Exception as e:
-            print(f"WebSocket listen error: {e}")
+            logger.error(f"WebSocket listen error: {e}", exc_info=True)
 
     async def send_request(self, request: JSONRPCMessage) -> JSONRPCResponse:
         """

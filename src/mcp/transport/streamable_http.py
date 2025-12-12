@@ -11,10 +11,13 @@ from src.mcp.types.json_rpc import (
 )
 from src.mcp.transport.base import BaseTransport
 from src.mcp.exception import MCPError
+from src.mcp.logger import get_logger
 from httpx import AsyncClient, Limits
 from typing import Optional, Dict
 import asyncio
 import json
+
+logger = get_logger(__name__)
 
 
 class StreamableHTTPTransport(BaseTransport):
@@ -109,7 +112,7 @@ class StreamableHTTPTransport(BaseTransport):
                                         fut.set_result(message)
 
         except Exception as e:
-            print(f"[Listen Error] {e}")
+            logger.error(f"Listen error: {e}", exc_info=True)
 
     async def send_request(self, request: JSONRPCMessage) -> JSONRPCResponse:
         """

@@ -6,6 +6,11 @@ from starlette.routing import Route, Mount
 from starlette.responses import StreamingResponse
 from mcp.server.fastmcp import FastMCP
 from datetime import datetime
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 mcp = FastMCP("example-server")
 sse = SseServerTransport("/messages/")
@@ -28,7 +33,7 @@ async def handle_sse(request: starlette.requests.Request):
                 initialization_options=mcp._mcp_server.create_initialization_options()
             )
     except Exception as e:
-        print(f"SSE connection error: {e}")
+        logger.error(f"SSE connection error: {e}", exc_info=True)
         raise e
 
 # Create Starlette app with proper routing

@@ -9,6 +9,7 @@ from src.mcp.types.json_rpc import (
     Error, Method
 )
 from src.mcp.transport.utils import get_default_environment
+from src.mcp.logger import get_logger
 
 from src.mcp.types.stdio import StdioServerParams
 from src.mcp.transport.base import BaseTransport
@@ -17,6 +18,8 @@ from asyncio.subprocess import Process
 import asyncio
 import json
 import sys
+
+logger = get_logger(__name__)
 
 
 class StdioTransport(BaseTransport):
@@ -143,7 +146,7 @@ class StdioTransport(BaseTransport):
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                print(f"Error reading from process: {e}")
+                logger.error(f"Error reading from process: {e}", exc_info=True)
 
     async def disconnect(self):
         """Gracefully disconnect and terminate the process."""
@@ -170,7 +173,7 @@ class StdioTransport(BaseTransport):
             try:
                 await asyncio.wait_for(self.process.wait(), timeout=5)
             except asyncio.TimeoutError:
-                print("Process did not terminate in time; killing it.")
+                logger.warning("Process did not terminate in time; killing it.")
                 self.process.kill()
                 await self.process.wait()
 

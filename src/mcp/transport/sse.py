@@ -1,5 +1,6 @@
 from src.mcp.types.json_rpc import JSONRPCRequest, JSONRPCError, Error, JSONRPCResponse, JSONRPCNotification, JSONRPCMessage, JSONRPCResultResponse, JSONRPCErrorResponse
 from src.mcp.transport.base import BaseTransport
+from src.mcp.logger import get_logger
 from httpx import AsyncClient, Limits
 from httpx_sse import aconnect_sse
 from src.mcp.exception import MCPError
@@ -7,6 +8,8 @@ from urllib.parse import urljoin
 from typing import Optional
 import asyncio
 import json
+
+logger = get_logger(__name__)
 
 
 class SSETransport(BaseTransport):
@@ -112,7 +115,7 @@ class SSETransport(BaseTransport):
                             continue
 
                 except Exception as e:
-                    print(f"Error processing SSE message: {e}")
+                    logger.error(f"Error processing SSE message: {e}", exc_info=True)
 
     async def disconnect(self):
         """Gracefully close connection."""
